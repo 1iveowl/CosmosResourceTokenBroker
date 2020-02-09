@@ -1,16 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace CosmosResourceTokenBroker
 {
@@ -25,53 +20,25 @@ namespace CosmosResourceTokenBroker
 
         private readonly DateTime _beginningOfTime;
 
-        private int FiveMinutesAgo => Convert.ToInt32(DateTime.UtcNow.AddMinutes(-5).Subtract(_beginningOfTime).TotalSeconds);
-        private int CreateExpires => Convert.ToInt32(DateTime.UtcNow.Subtract(_beginningOfTime).Add(TimeSpan.FromHours(1)).TotalSeconds);
-        private int CreateExpires2 => Convert.ToInt32(DateTime.UtcNow.Subtract(_beginningOfTime).TotalSeconds) + 3600;
+        private int CreateExpires() => Convert.ToInt32(DateTime.UtcNow.Subtract(_beginningOfTime).Add(TimeSpan.FromHours(1)).TotalSeconds);
 
-        private string CreatePermissionId(string userId) => $"{userId}permission";
+        private static string CreatePermissionId(string userId) => $"user-{userId}-permission";
 
         public ResourceTokenBrokerService(
             string hostUrl,
-            DocumentClient documentClient,
+            string key,
             string databaseId,
             string collectionId,
             ILogger logger = default)
         {
             _hostUri = new Uri($"{hostUrl}/.auth/me");
-            _documentClient = documentClient;
             _databaseId = databaseId;
             _collectionId = collectionId;
             _logger = logger;
 
+            _documentClient = new DocumentClient(new Uri(hostUrl), key);
+
             _beginningOfTime = new DateTime(2017, 1, 1);
-        }
-
-        public async Task<IPermissionToken> Get(string token, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var (userId, response) = await GetUserId(token, cancellationToken);
-
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    return await GetPermission(userId, cancellationToken);
-                }
-                else
-                {
-                    var error =  $"Unable to acquire user id. Status code: {response.StatusCode}, Reason {response.ReasonPhrase}";
-                    _logger?.Log(LogLevel.Error, error);
-
-                    throw new ResourceTokenBrokerServiceException(error);
-                }
-            }
-            catch (Exception ex)
-            {
-                var error = $"Unable to acquire user id. Exception thrown: {ex}";
-                _logger?.Log(LogLevel.Error, ex, "");
-
-                throw new ResourceTokenBrokerServiceException(error, ex);
-            }
         }
 
         public async Task<IPermissionToken> Get(string token, string userId, CancellationToken cancellationToken = default)
@@ -120,7 +87,7 @@ namespace CosmosResourceTokenBroker
         {
             try
             {
-                var documentUri = UriFactory.CreateDocumentUri(_databaseId, _collectionId, userId + "permission");
+                var documentUri = UriFactory.CreateDocumentUri(_databaseId, _collectionId, $"user-{userId}");
 
                 var requestOption = new RequestOptions {PartitionKey = new PartitionKey(userId)};
 
@@ -130,7 +97,7 @@ namespace CosmosResourceTokenBroker
                 {
                     var expires = resourceResponse.Resource.GetPropertyValue<int>("expires");
 
-                    if (expires > FiveMinutesAgo)
+                    if (expires > FiveMinutesAgo())
                     {
                         return new PermissionToken
                         {
@@ -154,6 +121,8 @@ namespace CosmosResourceTokenBroker
             }
 
             return null;
+
+            int FiveMinutesAgo() => Convert.ToInt32(DateTime.UtcNow.AddMinutes(-5).Subtract(_beginningOfTime).TotalSeconds);
         }
 
         private async Task<IPermissionToken> GetNewPermission(string userId)
@@ -170,7 +139,7 @@ namespace CosmosResourceTokenBroker
                     return new PermissionToken
                     {
                         Token = permission.Resource.Token,
-                        Expires = CreateExpires,
+                        Expires = CreateExpires(),
                         UserId = userId
                     };
                 }
@@ -202,7 +171,8 @@ namespace CosmosResourceTokenBroker
                     ResourcePartitionKey = new PartitionKey(userId),
                     Id = CreatePermissionId(userId) //needs to be unique for a given user
                 };
-                await LookupUserAndCreateIfNotExist(userId);
+
+                //await LookupUserAndCreateIfNotExist(userId);
 
                 var permission =
                     await _documentClient.CreatePermissionAsync(UriFactory.CreateUserUri(_databaseId, userId),
@@ -213,47 +183,13 @@ namespace CosmosResourceTokenBroker
                     return new PermissionToken
                     {
                         Token = permission.Resource.Token,
-                        Expires = CreateExpires,
+                        Expires = CreateExpires(),
                         UserId = userId
                     };
                 }
             }
 
             return default;
-        }
-
-        private async Task<(string userId, HttpResponseMessage response)> GetUserId(string token, CancellationToken cancellationToken = default)
-        {
-            using var httpClient = new HttpClient();
-
-            httpClient.DefaultRequestHeaders.Add("x-zumo-auth", token);
-
-            var response = await httpClient.GetAsync(_hostUri, cancellationToken);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonSerializer = new JsonSerializer();
-
-                await using var contentStream = await response.Content.ReadAsStreamAsync();
-
-                using var streamReader = new StreamReader(contentStream);
-                using var jsonReader = new JsonTextReader(streamReader);
-
-                if (jsonReader.TokenType == JsonToken.StartObject)
-                {
-                    var obj = jsonSerializer.Deserialize<JArray>(jsonReader);
-
-                    var userId = obj?
-                        .Children()
-                        .FirstOrDefault()?
-                        .Children<JProperty>()
-                        .FirstOrDefault(x => x?.Name?.ToLower() == "user_id")?.Value?.ToString();
-
-                    return (userId, response);
-                }
-            }
-
-            return (null, response);
         }
 
         private async Task LookupUserAndCreateIfNotExist(string userId)
@@ -273,6 +209,13 @@ namespace CosmosResourceTokenBroker
 
                 throw new ResourceTokenBrokerServiceException($"Unable to read user {userId}", ex);
             }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _documentClient?.Dispose();
+
+            return new ValueTask();
         }
     }
 }
