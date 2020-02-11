@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace CosmosResourceToken.Core
 {
@@ -9,7 +10,7 @@ namespace CosmosResourceToken.Core
         [JsonProperty(PropertyName = "token")]
         public string Token { get; set; }
         [JsonProperty(PropertyName = "expires")]
-        public int Expires { get; set; }
+        public DateTime ExpiresUtc { get; set; }
         [JsonProperty(PropertyName = "userid")]
         public string UserId { get; set; }
     }

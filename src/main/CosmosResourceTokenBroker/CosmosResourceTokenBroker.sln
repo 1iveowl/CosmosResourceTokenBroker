@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamarinForms.Client.Android
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamarinForms.Client.iOS", "..\..\sample\client\XamarinForms.Client\XamarinForms.Client.iOS\XamarinForms.Client.iOS.csproj", "{D6A8BCAE-019D-40CD-B1AA-B08C70D25E8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamarinForms.Client", "..\..\sample\client\XamarinForms.Client\XamarinForms.Client\XamarinForms.Client.csproj", "{068CE5CC-C695-449A-9786-2F71135C91D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XamarinForms.Client", "..\..\sample\client\XamarinForms.Client\XamarinForms.Client\XamarinForms.Client.csproj", "{068CE5CC-C695-449A-9786-2F71135C91D0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CrossPlatform", "CrossPlatform", "{774AFB8C-2499-4EBE-9F20-18C812CB1661}"
 EndProject

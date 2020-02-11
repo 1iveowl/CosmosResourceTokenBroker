@@ -1,10 +1,12 @@
-﻿namespace CosmosResourceToken.Core
+﻿using System;
+
+namespace CosmosResourceToken.Core
 {
     public interface IPermissionToken
     {
         string Id { get; }
         string Token { get; }
-        int Expires { get; }
+        DateTime ExpiresUtc { get; }
         string UserId { get; }
     }
 }

@@ -6,6 +6,6 @@ namespace CosmosResourceToken.Core
 {
     public interface IResourceTokenBrokerService : IAsyncDisposable
     {
-        Task<IPermissionToken> Get(string token, string userId, CancellationToken cancellationToken = default);
+        Task<IPermissionToken> Get(string userId, CancellationToken cancellationToken = default);
     }
 }
