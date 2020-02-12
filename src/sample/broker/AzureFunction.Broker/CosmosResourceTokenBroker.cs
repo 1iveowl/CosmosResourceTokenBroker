@@ -6,8 +6,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.IdentityModel;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using CosmosResourceToken.Core;
 
 namespace AzureFunction.Broker
 {
@@ -17,6 +18,8 @@ namespace AzureFunction.Broker
         private readonly string _key;
         private readonly string _databaseId;
         private readonly string _collectionId;
+        private readonly string _permissionModeReadScopeName;
+        private readonly string _permissionModeAllScopeName;
         
         public CosmosResourceTokenBroker()
         {
@@ -24,6 +27,8 @@ namespace AzureFunction.Broker
             _key = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
             _databaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
             _collectionId = Environment.GetEnvironmentVariable("CosmosCollection");
+            _permissionModeAllScopeName = Environment.GetEnvironmentVariable("PermissionModeAllScopeName");
+            _permissionModeReadScopeName = Environment.GetEnvironmentVariable("PermissionModeReadScopeName");
         }
 
         [FunctionName("CosmosResourceTokenBroker")]
@@ -31,9 +36,7 @@ namespace AzureFunction.Broker
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "broker")] HttpRequest req,
             ILogger log)
         {
-            log.Log(LogLevel.Trace, "Start");
-            await using var brokerService = new BrokerService2(_hostUrl, _key, _databaseId, _collectionId);
-
+            
             string accessToken = null;
 
             try
@@ -41,6 +44,11 @@ namespace AzureFunction.Broker
                 accessToken = req?.Headers?["Authorization"].ToString()?.Replace("Bearer ", string.Empty);
 
                 log.Log(LogLevel.Information, $"Access token: {accessToken}");
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    return new BadRequestObjectResult("Access token is missing");
+                }
             }
             catch (Exception ex)
             {
@@ -56,42 +64,56 @@ namespace AzureFunction.Broker
                 var handler = new JwtSecurityTokenHandler();
 
                 token = handler.ReadJwtToken(accessToken);
-
+                
                 log.Log(LogLevel.Information, $"Jwt: {token}");
+
+                if (!handler.CanValidateToken)
+                {
+                    var error = "Unable to validate token.";
+                    log.Log(LogLevel.Error, error);
+                    return new BadRequestObjectResult(error);
+                }
             }
             catch (Exception ex)
             {
                 var error = $"Jwt token: {token} - Exception: {ex}";
                 log.Log(LogLevel.Error, error);
-                return new BadRequestObjectResult($"Jwt token: {token} - Exception: {ex}");
+                return new BadRequestObjectResult(error);
             }
 
             var userObjectId = token?.Subject;
 
-            var permissionToken = await brokerService.Get(userObjectId);
+            if (string.IsNullOrEmpty(userObjectId))
+            {
+                var error = "No subject defined in access token";
+                log.Log(LogLevel.Error, error);
+                return new BadRequestObjectResult(error);
+            }
 
-            return (IActionResult) new OkObjectResult($"User: {userObjectId}");
+            var permissionScope = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value;
+            
+            PermissionModeKind permissionMode;
 
-                //if (!string.IsNullOrEmpty(accessToken))
-                //{
+            if (permissionScope?.ToLower() == _permissionModeReadScopeName.ToLower())
+            {
+                permissionMode = PermissionModeKind.Read;
+            }
+            else if (permissionScope?.ToLower() == _permissionModeAllScopeName.ToLower())
+            {
+                permissionMode = PermissionModeKind.All;
+            }
+            else
+            {
+                var error = "Unknown scope";
+                log.Log(LogLevel.Error, error);
+                return new BadRequestObjectResult(error);
+            }
 
-                //    if (req.GetQueryParameterDictionary().TryGetValue("userId", out var userId))
-                //    {
-                //        if (!string.IsNullOrEmpty(userId.Trim()))
-                //        {
-                //            var permission = await brokerService.Get(accessToken, userId);
+            await using var brokerService = new BrokerService(_hostUrl, _key, _databaseId, _collectionId);
 
-                //            return (IActionResult)new OkObjectResult(permission);
-                //        }
+            var permissionToken = await brokerService.Get(userObjectId, permissionMode);
 
-                //        return (IActionResult)new BadRequestObjectResult("UserId parameter is null or empty");
-                //    }
-
-                //    return (IActionResult)new BadRequestObjectResult("UserId parameter is missing");
-                //}
-
-                // return (IActionResult)new BadRequestObjectResult("Header 'x-zumo-auth' is missing or has no value");
-
+            return (IActionResult) new OkObjectResult(permissionToken);
         }
     }
 }

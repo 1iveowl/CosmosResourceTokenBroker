@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +7,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace CosmosResourceTokenBroker
 {
-    public class BrokerService2 : IResourceTokenBrokerService
+    public class BrokerService : IResourceTokenBrokerService
     {
         private readonly CosmosClient _cosmosClient;
         private readonly Database _database;
@@ -19,7 +18,7 @@ namespace CosmosResourceTokenBroker
         private static string GetUserPartitionKey(string userId) => $"user-{userId}";
         private static string GetReadWriteUserPermission(string userId) => $"{userId}permission";
 
-        public BrokerService2(string endpointUrl, string key, string databaseId, string collectionId, TimeSpan? resourceTokenTtl = default)
+        public BrokerService(string endpointUrl, string key, string databaseId, string collectionId, TimeSpan? resourceTokenTtl = default)
         {
             _cosmosClient = new CosmosClient(endpointUrl, key);
             _database = _cosmosClient.GetDatabase(databaseId);
@@ -31,13 +30,14 @@ namespace CosmosResourceTokenBroker
             }
         }
 
-        public async Task<IPermissionToken> Get(string userId, CancellationToken cancellationToken = default)
+        public async Task<IPermissionToken> Get(string userId, PermissionModeKind permissionMode, CancellationToken cancellationToken = default)
         {
             var user = await GetOrCreateCosmosUser(userId, cancellationToken);
 
             return await GetOrCreateUserPermissions(
                 user, 
                 GetReadWriteUserPermission(userId), 
+                permissionMode,
                 cancellationToken);
         }
 
@@ -62,19 +62,10 @@ namespace CosmosResourceTokenBroker
             return null;
         }
 
-        private async Task<IPermissionToken> GetOrCreateUserPermissions(User user, string permissionId, CancellationToken ct)
+        private async Task<IPermissionToken> GetOrCreateUserPermissions(User user, string permissionId, PermissionModeKind permissionMode, CancellationToken ct)
         {
             try
             {
-                var p = user.GetPermissionQueryIterator<object>();
-
-                var lst = new List<object>();
-
-                while (p.HasMoreResults)
-                {
-                    lst.Add(await p.ReadNextAsync(ct));
-                }
-
                 var permission = user.GetPermission(permissionId);
 
                 var expireIn = Convert.ToInt32(_resourceTokenTtl.TotalSeconds);
@@ -85,7 +76,7 @@ namespace CosmosResourceTokenBroker
 
                 if (permissionResponse.StatusCode == HttpStatusCode.NotFound)
                 {
-                    return await CreateNewPermission(user, permissionId, ct);
+                    return await CreateNewPermission(user, permissionId, permissionMode, ct);
                 }
 
                 if (!(permissionResponse?.Resource?.Token is null))
@@ -93,24 +84,31 @@ namespace CosmosResourceTokenBroker
                     return CreatePermissionToken(permissionResponse, user);
                 }
             }
-            catch (Exception ex)
+            catch (CosmosException ex)
             {
-                //if (ex.StatusCode != HttpStatusCode.NotFound)
-                //{
-                //    throw new ResourceTokenBrokerServiceException($"Unable to read or create user permissions. Unhandled exception: {ex}");
-                //}
+                if (ex.StatusCode != HttpStatusCode.NotFound)
+                {
+                    throw new ResourceTokenBrokerServiceException($"Unable to read or create user permissions. Unhandled exception: {ex}");
+                }
             }
 
-            return await CreateNewPermission(user, permissionId, ct);
+            return await CreateNewPermission(user, permissionId, permissionMode, ct);
         }
 
-        private async Task<IPermissionToken> CreateNewPermission(User user, string permissionId, CancellationToken ct)
+        private async Task<IPermissionToken> CreateNewPermission(User user, string permissionId, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var container = _database.GetContainer(_collectionId);
 
+            var pm = permissionMode switch
+            {
+                PermissionModeKind.All => PermissionMode.All,
+                PermissionModeKind.Read => PermissionMode.Read,
+                _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode, "Unknown permission mode")
+            };
+
             var permissionProperties = new PermissionProperties(
                 permissionId,
-                PermissionMode.All,
+                pm,
                 container,
                 new PartitionKey(GetUserPartitionKey(user.Id)));
 
