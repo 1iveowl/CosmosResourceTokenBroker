@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.6.0" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.9.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -26,7 +26,7 @@ namespace AzureFunction.Broker
             _hostUrl = Environment.GetEnvironmentVariable("CosmosUrl");
             _key = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
             _databaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
-            _collectionId = Environment.GetEnvironmentVariable("CosmosCollection");
+            _collectionId = Environment.GetEnvironmentVariable("CosmosCollectionId");
             _permissionModeAllScopeName = Environment.GetEnvironmentVariable("PermissionModeAllScopeName");
             _permissionModeReadScopeName = Environment.GetEnvironmentVariable("PermissionModeReadScopeName");
         }
