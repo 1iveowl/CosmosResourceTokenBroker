@@ -23,6 +23,8 @@ namespace AzureFunction.Broker
         
         public CosmosResourceTokenBroker()
         {
+
+            // TODO change to Configuration builder: https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf
             _hostUrl = Environment.GetEnvironmentVariable("CosmosUrl");
             _key = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
             _databaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");

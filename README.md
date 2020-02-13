@@ -40,11 +40,11 @@ Before going into the details, I suggest a quick read-through the official Micro
 
 *Note: There is a link to a similar github repository in this document, however I found the code there somewhat outdated. Still, if you are limited to earlier versions of .NET rather than .NET Core, then you might find it useful.*
 
-### The Steps
+## The Steps
 
 Here are the steps you need to go through to get started.
 
-#### Starting Afresh
+### Starting Afresh
 
 If you are ***not*** migrating from AppCenter Auth and AppCenter Data then you'll first need to do this:
 
@@ -53,14 +53,14 @@ If you are ***not*** migrating from AppCenter Auth and AppCenter Data then you'l
 3. Prepare your Xamarin mobile app to use [MSAL](https://github.com/Azure-Samples/active-directory-xamarin-native-v2).
 
 
-#### Migrating From AppCenter Auth and AppCenter Data
+### Migrating From AppCenter Auth and AppCenter Data
 
 If you are migrating an existing mobile app off of AppCenter Auth and AppCenter Data, then the first thing you should do is to create an HTTP Triggered Azure Function that will work as your Resource Token Broker. 
 
 *Note: You can also run your Resource Token Broker as for example an ASP.NET Core app, running in an App Service. The Resource Token Broker Service library can easy accommodate such a scenario, however setting this up and configuring this is outside the scope of this guide, although the essential steps should not be that much different.*
 
 
-##### Azure Function Resource Token Broker
+#### Azure Function Resource Token Broker
 
 The ingredients for getting the Resource Token Broker ready as an Azure Function are:
 
@@ -70,12 +70,35 @@ The ingredients for getting the Resource Token Broker ready as an Azure Function
 Here's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
 
-When you've published your Azure Function and configured it as outlined in the just mentioned [guide](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c) then you will have a Resource Token Broker running, which requires AD authentication. 
+When you've published your Azure Function and configured it as outlined in the just mentioned [guide](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L23) then you'll need to configure the Resource Broker Service. 
 
-You can test that your configuration and is successful by copying the URL of your Azure Function into a browser running in Incognito/InPrivate Browsing mode, and see that you will now be asked to log-in using your favorite social account (according to the configuration of your Azure AD B2C sign-in User Flow flow) before being able to access the Azure Function. 
+In the sample, configuration is specified as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
 
-This is just a test, of course. Going forward the user will not be presented with this log-in requirement, rather we will configure the app to handle log-in using MSAL, and then utilize an Access Token acquired here to authenticate the user to the Azure Function. 
+When running your Azure Function in your emulator on your local developer machine those settings are read from the file 'local.settings.json' in your project. This file should look something like this: 
 
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    
+    "CosmosEndpointUrl": "AccountEndpoint=https://[my cosmos db name].documents.azure.com:443/;AccountKey=[Secret Key...];",
+    "CosmosUrl": "https://[My cosmos db name].documents.azure.com:443/",
+    "CosmosPrimaryKey": "[Secret primary key...]",
+    "CosmosCollectionId": "[Collection name]",
+    "CosmosDatabaseId": "[Database name]",
+    "PermissionModeReadScopeName": "user.readonly",
+    "PermissionModeAllScopeName" :  "user.readwrite"
+  }
+}
+```
+Please note, that this file will not look like this when you first open the Azure Function sample in this repository. Specifically most of the values will be missing. This is because 'local.settings.json' is excluded per default, by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. 
 
-##### Using MSAL With The App
+You must configure the same data for your Azure Function in production as well by specifying them in your [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). Here I strongly suggest that you place your secrets in the [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/)
 
+Now you should have a Resource Token Broker running nicely, and which requires AD authentication of any user accessing it. You can test that your Azure AD B2C configuration is successful by copying the URL of your Azure Function into a browser running in Incognito/InPrivate Browsing mode, and see that you will now be asked to log-in using your favorite social account (according to the configuration of your Azure AD B2C sign-in User Flow flow). 
+
+This is just a test, of course. Going forward the user will not, and should not, be presented with such log-in requirements everytime the broker is needed in the app, rather you will be configuring the app to handle user log-in once, using MSAL, and then utilize an Access Token for the different scopes (read and read-write) to authenticate the user to the Azure Function.
+
+#### Using MSAL With The App
