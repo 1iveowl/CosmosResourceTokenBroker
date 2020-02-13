@@ -62,17 +62,17 @@ If you are migrating an existing mobile app off of AppCenter Auth and AppCenter 
 
 #### Azure Function Resource Token Broker
 
-The ingredients for getting the Resource Token Broker ready as an Azure Function are:
+The ingredients for getting the Resource Token Broker ready as an Azure Function are included this repository and include:
 
-1.  The code for the [Resource Token Broker Service](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker) 
-2.  The [Azure Function sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker) shows you how to use the Resource Token Broker Service. 
+1.  The code for the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker).
+2.  The [Azure Function sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker) which shows you how to configure and use the Resource Token Broker Service. 
 
 Here's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
 
 When you've published your Azure Function and configured it as outlined in the just mentioned [guide](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L23) then you'll need to configure the Resource Broker Service. 
 
-In the sample, configuration is specified as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
+In the sample, configuration is difned as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
 
 When running your Azure Function in your emulator on your local developer machine those settings are read from the file 'local.settings.json' in your project. This file should look something like this: 
 
