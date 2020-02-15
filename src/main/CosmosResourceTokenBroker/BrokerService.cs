@@ -3,6 +3,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core;
+using CosmosResourceToken.Core.Broker;
+using CosmosResourceToken.Core.Model;
 using Microsoft.Azure.Cosmos;
 
 namespace CosmosResourceTokenBroker
@@ -12,6 +14,7 @@ namespace CosmosResourceTokenBroker
         private readonly CosmosClient _cosmosClient;
         private readonly Database _database;
         private readonly string _collectionId;
+        private readonly string _endpointUrl;
 
         private readonly TimeSpan _resourceTokenTtl;
 
@@ -23,6 +26,7 @@ namespace CosmosResourceTokenBroker
             _cosmosClient = new CosmosClient(endpointUrl, key);
             _database = _cosmosClient.GetDatabase(databaseId);
             _collectionId = collectionId;
+            _endpointUrl = endpointUrl;
 
             if (resourceTokenTtl is null)
             {
@@ -127,7 +131,6 @@ namespace CosmosResourceTokenBroker
             {
                 throw new ResourceTokenBrokerServiceException($"Unable to create new permission for user. Unhandled exception: {ex}");
             }
-
         }
 
         private IPermissionToken CreatePermissionToken(PermissionResponse permissionResponse, User user)
@@ -137,7 +140,8 @@ namespace CosmosResourceTokenBroker
                 Token = permissionResponse.Resource.Token,
                 ExpiresUtc = DateTime.UtcNow + _resourceTokenTtl,
                 UserId = user.Id,
-                Id = permissionResponse.Resource.Id
+                Id = permissionResponse.Resource.Id,
+                EndpointUrl = _endpointUrl
             };
         }
         

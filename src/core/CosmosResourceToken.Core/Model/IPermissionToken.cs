@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CosmosResourceToken.Core
+namespace CosmosResourceToken.Core.Model
 {
     public interface IPermissionToken
     {
@@ -8,5 +8,6 @@ namespace CosmosResourceToken.Core
         string Token { get; }
         DateTime ExpiresUtc { get; }
         string UserId { get; }
+        string EndpointUrl { get; }
     }
 }

@@ -1,0 +1,11 @@
+{
+  "B2CHostName": "{Insert your name].b2clogin.com",
+  "TenantId": "[Insert your name].onmicrosoft.com",
+  "ClientId": "[Insert your Client/Application id]",
+  "SignUpSignInFlowName": "B2C_1_[Your user flow name]",
+  "Scopes": [
+    "https://[Insert your name].onmicrosoft.com/[Insert your name or id]/[Insert your read scope - for example: 'user.readonly']",
+    "https://[Insert your name].onmicrosoft.com/[Insert your name or id]/Insert your read/write scope - for example: 'user.readwrite']"
+  ]
+
+}

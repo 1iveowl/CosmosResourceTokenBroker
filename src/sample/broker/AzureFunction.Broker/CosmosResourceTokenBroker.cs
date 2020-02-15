@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using CosmosResourceToken.Core;
+using CosmosResourceToken.Core.Model;
 
 namespace AzureFunction.Broker
 {
@@ -37,7 +38,7 @@ namespace AzureFunction.Broker
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "broker")] HttpRequest req,
             ILogger log)
         {
-         
+
             // Extracting the Access Token from the http request from the client
             string accessToken = null;
 
@@ -69,12 +70,12 @@ namespace AzureFunction.Broker
 
                 if (!handler.CanValidateToken)
                 {
-                    return LogErrorAndCreateBadObjectResult("Unable to validate token.", log);
+                    return LogErrorAndCreateBadObjectResult($"Unable to validate token: {accessToken}", log);
                 }
             }
             catch (Exception ex)
             {
-                return LogErrorAndCreateBadObjectResult("Unable to read JWT token", log, ex);
+                return LogErrorAndCreateBadObjectResult($"Unable to read JWT token: {accessToken}", log, ex);
             }
 
             // Getting the user object id from the Access Token
@@ -112,7 +113,7 @@ namespace AzureFunction.Broker
             return (IActionResult) new OkObjectResult(permissionToken);
         }
 
-        private BadRequestObjectResult LogErrorAndCreateBadObjectResult(string error, ILogger log, Exception ex = default)
+        private static BadRequestObjectResult LogErrorAndCreateBadObjectResult(string error, ILogger log, Exception ex = default)
         {
             log.Log(LogLevel.Error, ex is null ? $"{error}" : $"{error}. Unhandled exception: {ex}");
             return new BadRequestObjectResult(ex is null ? $"{error}" :$"{error}. Unhandled exception: {ex}");

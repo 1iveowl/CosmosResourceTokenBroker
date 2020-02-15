@@ -1,11 +1,13 @@
-﻿using System;
-
-using Android.App;
+﻿using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
+using MBaaSMigration.Droid;
+using Microsoft.Identity.Client;
+using Plugin.CurrentActivity;
+using Xamarin.Forms;
+using XamarinForms.Client.Authentication.Interface;
 
 namespace XamarinForms.Client.Droid
 {
@@ -14,6 +16,10 @@ namespace XamarinForms.Client.Droid
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+
+            CrossCurrentActivity.Current.Init(this, savedInstanceState);
+            DependencyService.Register<IParentWindowLocatorService, AndroidParentWindowLocatorService>();
+
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
@@ -28,6 +34,12 @@ namespace XamarinForms.Client.Droid
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
         }
     }
 }

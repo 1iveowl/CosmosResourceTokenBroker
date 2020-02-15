@@ -1,4 +1,4 @@
-﻿namespace CosmosResourceToken.Core
+﻿namespace CosmosResourceToken.Core.Model
 {
     public enum PermissionModeKind
     {

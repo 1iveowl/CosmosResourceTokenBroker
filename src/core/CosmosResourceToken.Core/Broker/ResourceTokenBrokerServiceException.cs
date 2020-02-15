@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace CosmosResourceToken.Core
+namespace CosmosResourceToken.Core.Broker
 {
     public class ResourceTokenBrokerServiceException : Exception
     {

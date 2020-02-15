@@ -34,5 +34,23 @@
     <string>XamarinForms.Client</string>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/AppIcon.appiconset</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>com.companyname.mbaasmigration</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>msal9239cf10-0007-4159-9a8b-c6a97ecd9edc</string>
+      </array>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+    </dict>
+  </array>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+  </dict>
 </dict>
 </plist>

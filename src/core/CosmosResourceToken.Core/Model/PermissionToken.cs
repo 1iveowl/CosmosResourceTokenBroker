@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace CosmosResourceToken.Core
+namespace CosmosResourceToken.Core.Model
 {
     public class PermissionToken : IPermissionToken
     {
@@ -13,5 +13,8 @@ namespace CosmosResourceToken.Core
         public DateTime ExpiresUtc { get; set; }
         [JsonProperty(PropertyName = "userid")]
         public string UserId { get; set; }
+
+        [JsonIgnore]
+        public string EndpointUrl { get; set; }
     }
 }

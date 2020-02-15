@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CosmosResourceToken.Core.Model;
 
-namespace CosmosResourceToken.Core
+namespace CosmosResourceToken.Core.Broker
 {
     public interface IResourceTokenBrokerService : IAsyncDisposable
     {

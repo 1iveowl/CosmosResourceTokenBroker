@@ -6,11 +6,19 @@
              mc:Ignorable="d"
              x:Class="XamarinForms.Client.MainPage">
 
-    <StackLayout>
-        <!-- Place new controls here -->
-        <Label Text="Welcome to Xamarin.Forms!" 
-           HorizontalOptions="Center"
-           VerticalOptions="CenterAndExpand" />
+    <StackLayout Margin="8,24,8,24">
+
+        <Label Text="Cosmos/MSAL Resource Token Broker Sample Client" 
+               VerticalOptions="Start" 
+               HorizontalTextAlignment="Center"
+               HorizontalOptions="FillAndExpand" />
+
+        <Button Text="Sign In" 
+                Clicked="Button_OnSignIn"
+                VerticalOptions="End" 
+                HorizontalOptions="FillAndExpand">
+        </Button>
+
     </StackLayout>
 
 </ContentPage>

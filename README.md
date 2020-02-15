@@ -83,7 +83,6 @@ When running your Azure Function in your emulator on your local developer machin
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     
-    "CosmosEndpointUrl": "AccountEndpoint=https://[my cosmos db name].documents.azure.com:443/;AccountKey=[Secret Key...];",
     "CosmosUrl": "https://[My cosmos db name].documents.azure.com:443/",
     "CosmosPrimaryKey": "[Secret primary key...]",
     "CosmosCollectionId": "[Collection name]",
