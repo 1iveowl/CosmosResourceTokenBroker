@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core.B2C;
+using CosmosResourceToken.Core.Client;
 using Microsoft.Identity.Client;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -54,7 +54,7 @@ namespace XamarinForms.Client.Authentication
 
         public async Task<IUserContext> SignIn(CancellationToken cancellationToken = default)
         {
-            return await AcquireToken(cancellationToken);
+            return await AcquireToken(_scopes, cancellationToken);
         }
         
         public async Task SignOut(CancellationToken cancellationToken = default)
@@ -64,13 +64,21 @@ namespace XamarinForms.Client.Authentication
             await _pca.RemoveAsync(account);
         }
 
-        private async Task<IUserContext> AcquireToken(CancellationToken ct)
+
+        //See this: https://medium.com/@smartdeveloper/azure-functions-rest-api-security-with-msal-and-azure-ad-c9cd75d3316e
+        public async Task<IUserContext> AcquireUserContextForSpecificScope(string scope, CancellationToken cancellationToken = default)
         {
+            return await AcquireToken(new List<string> { scope }, cancellationToken);
+        }
+
+        private async Task<IUserContext> AcquireToken(IEnumerable<string> scopes, CancellationToken ct)
+        {
+            //TODO Read this: https://medium.com/@smartdeveloper/azure-functions-rest-api-security-with-msal-and-azure-ad-c9cd75d3316e
             var account = await GetAccount();
 
             try
             {
-                var authResult = await _pca.AcquireTokenSilent(_scopes, account)
+                var authResult = await _pca.AcquireTokenSilent(scopes, account)
                     .ExecuteAsync(ct);
 
                 return new UserContext(authResult);

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CosmosResourceToken.Core.B2C;
+using CosmosResourceToken.Core.Client;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using XamarinForms.Client.Authentication.Interface;
@@ -51,7 +51,7 @@ namespace XamarinForms.Client.Authentication.Model
             NewUser = jwtPayload["newUser"]?.ToString()?.ToLowerInvariant() == "true";
             Scope = jwtPayload["scp"]?.ToString();
             Name = jwtPayload["user"]?.ToString();
-            UserIdentifier = jwtPayload["oid"]?.ToString();
+            UserIdentifier = jwtPayload["sub"]?.ToString();
             GivenName = jwtPayload["given_name"]?.ToString();
             FamilyName = jwtPayload["family_name"]?.ToString();
             StreetAddress = jwtPayload["streetAddress"]?.ToString();

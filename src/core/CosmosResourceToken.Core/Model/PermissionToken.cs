@@ -13,8 +13,7 @@ namespace CosmosResourceToken.Core.Model
         public DateTime ExpiresUtc { get; set; }
         [JsonProperty(PropertyName = "userid")]
         public string UserId { get; set; }
-
-        [JsonIgnore]
+        [JsonProperty(PropertyName = "endpointurl")]
         public string EndpointUrl { get; set; }
     }
 }

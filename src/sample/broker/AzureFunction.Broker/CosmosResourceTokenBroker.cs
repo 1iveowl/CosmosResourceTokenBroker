@@ -87,7 +87,7 @@ namespace AzureFunction.Broker
             }
 
             // Getting the permission scope from the Access Token to determine the permission mode.
-            var permissionScope = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value;
+            var permissionScopes = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value.Split(' ');
             
             PermissionModeKind permissionMode;
 

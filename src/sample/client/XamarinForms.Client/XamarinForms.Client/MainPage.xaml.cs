@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using CosmosResourceToken.Core.B2C;
+using CosmosResourceToken.Core.Client;
 using Newtonsoft.Json.Linq;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -17,6 +18,7 @@ namespace XamarinForms.Client
     public partial class MainPage : ContentPage
     {
         private readonly IB2CAuthService _authService;
+        private readonly IEnumerable<string> _scopes;
         
         public MainPage()
         {
@@ -39,14 +41,14 @@ namespace XamarinForms.Client
                 var clientId = dataObject["ClientId"].ToString();
                 var signUpSignInFlowName = dataObject["SignUpSignInFlowName"].ToString();
 
-                var scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
+                _scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
 
                 _authService = new B2CAuthService(
                     b2cHostName,
                     tenantId,
                     clientId,
                     signUpSignInFlowName,
-                    scopes,
+                    _scopes,
                     "com.microsoft.adalcache",
                     DeviceInfo.Platform);
             }
@@ -56,7 +58,7 @@ namespace XamarinForms.Client
 
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
-            var userContext = await _authService.SignIn();
+            var userContext = await _authService.AcquireUserContextForSpecificScope(_scopes.FirstOrDefault());
         }
     }
 }

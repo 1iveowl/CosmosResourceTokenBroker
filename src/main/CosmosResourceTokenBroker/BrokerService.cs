@@ -2,7 +2,6 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core;
 using CosmosResourceToken.Core.Broker;
 using CosmosResourceToken.Core.Model;
 using Microsoft.Azure.Cosmos;

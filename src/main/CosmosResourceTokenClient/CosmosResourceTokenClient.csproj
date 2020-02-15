@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CosmosResourceTokenBroker\CosmosResourceTokenBroker.csproj" />
+    <ProjectReference Include="..\..\core\CosmosResourceToken.Core\CosmosResourceToken.Core.csproj" />
   </ItemGroup>
 
 </Project>

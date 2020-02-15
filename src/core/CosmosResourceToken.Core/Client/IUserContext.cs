@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CosmosResourceToken.Core.B2C
+namespace CosmosResourceToken.Core.Client
 {
     public interface IUserContext
     {
