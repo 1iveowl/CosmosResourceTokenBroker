@@ -2,6 +2,7 @@
 
 namespace CosmosResourceToken.Core.Client
 {
+    [Preserve(AllMembers = true)]
     public interface IUserContext
     {
         string Name { get; }

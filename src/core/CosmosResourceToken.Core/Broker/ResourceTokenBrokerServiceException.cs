@@ -2,6 +2,7 @@
 
 namespace CosmosResourceToken.Core.Broker
 {
+    [Preserve(AllMembers = true)]
     public class ResourceTokenBrokerServiceException : Exception
     {
         public ResourceTokenBrokerServiceException() { }

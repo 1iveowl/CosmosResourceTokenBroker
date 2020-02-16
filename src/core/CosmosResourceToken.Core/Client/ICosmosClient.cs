@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace CosmosResourceToken.Core.Client
 {
+    [Preserve(AllMembers = true)]
     public interface ICosmosClient
     {
         Task Create<T>(string id, T obj, DefaultPartitionKind defaultPartition);

@@ -8,8 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using CosmosResourceToken.Core;
-using CosmosResourceToken.Core.Model;
+using static CosmosResourceToken.Core.Model.Constants;
 
 namespace AzureFunction.Broker
 {
@@ -19,8 +18,6 @@ namespace AzureFunction.Broker
         private readonly string _cosmosKey;
         private readonly string _cosmosDatabaseId;
         private readonly string _cosmosCollectionId;
-        private readonly string _permissionModeReadScopeName;
-        private readonly string _permissionModeAllScopeName;
         
         public CosmosResourceTokenBroker()
         {
@@ -29,8 +26,6 @@ namespace AzureFunction.Broker
             _cosmosKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
             _cosmosDatabaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
             _cosmosCollectionId = Environment.GetEnvironmentVariable("CosmosCollectionId");
-            _permissionModeAllScopeName = Environment.GetEnvironmentVariable("PermissionModeAllScopeName");
-            _permissionModeReadScopeName = Environment.GetEnvironmentVariable("PermissionModeReadScopeName");
         }
 
         [FunctionName("CosmosResourceTokenBroker")]
@@ -87,28 +82,27 @@ namespace AzureFunction.Broker
             }
 
             // Getting the permission scope from the Access Token to determine the permission mode.
-            var permissionScopes = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value.Split(' ');
+            var scopes = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value.Split(' ');
+
+            if (!scopes?.Any() ?? false)
+            {
+                return LogErrorAndCreateBadObjectResult("No scopes defined", log);
+            }
+
+            var permissionScopes = scopes?.Select(scope => KnownPermissionScopes?.FirstOrDefault(ks => ks?.Scope == scope));
             
-            PermissionModeKind permissionMode;
-
-            if (permissionScope?.ToLower() == _permissionModeReadScopeName.ToLower())
+            if (!permissionScopes?.Any() ?? false)
             {
-                permissionMode = PermissionModeKind.Read;
-            }
-            else if (permissionScope?.ToLower() == _permissionModeAllScopeName.ToLower())
-            {
-                permissionMode = PermissionModeKind.All;
-            }
-            else
-            {
-                return LogErrorAndCreateBadObjectResult("Unknown scope", log);
+                return LogErrorAndCreateBadObjectResult($"No known scopes: " +
+                                                        $"{string.Join(", ", scopes)}. " +
+                                                        $"Known scopes are: " +
+                                                        $"{string.Join(", ", KnownPermissionScopes.Select(ks => ks.Scope))}", log);
             }
 
-            // Instantiating the Resource Token Broker Service
-            await using var brokerService = new BrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
+            await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
 
-            // Getting the Resource Permission Token
-            var permissionToken = await brokerService.Get(userObjectId, permissionMode);
+            // Getting the Resource Permission Tokens
+            var permissionToken = await brokerService.Get(userObjectId, permissionScopes);
 
             return (IActionResult) new OkObjectResult(permissionToken);
         }

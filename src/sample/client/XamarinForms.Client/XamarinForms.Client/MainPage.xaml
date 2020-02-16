@@ -19,6 +19,12 @@
                 HorizontalOptions="FillAndExpand">
         </Button>
 
+        <Button Text="Sign Out" 
+                Clicked="Button_SignOut"
+                VerticalOptions="End" 
+                HorizontalOptions="FillAndExpand">
+        </Button>
+
     </StackLayout>
 
 </ContentPage>

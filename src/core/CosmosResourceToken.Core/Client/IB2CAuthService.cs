@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace CosmosResourceToken.Core.Client
 {
+    [Preserve(AllMembers = true)]
     public interface IB2CAuthService
     {
         Task<IUserContext> SignIn(CancellationToken cancellationToken = default);

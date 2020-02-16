@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -18,8 +17,7 @@ namespace XamarinForms.Client
     public partial class MainPage : ContentPage
     {
         private readonly IB2CAuthService _authService;
-        private readonly IEnumerable<string> _scopes;
-        
+
         public MainPage()
         {
             const string defaultNameSpace = "XamarinForms.Client";
@@ -41,14 +39,14 @@ namespace XamarinForms.Client
                 var clientId = dataObject["ClientId"].ToString();
                 var signUpSignInFlowName = dataObject["SignUpSignInFlowName"].ToString();
 
-                _scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
+                var scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
 
                 _authService = new B2CAuthService(
                     b2cHostName,
                     tenantId,
                     clientId,
                     signUpSignInFlowName,
-                    _scopes,
+                    scopes,
                     "com.microsoft.adalcache",
                     DeviceInfo.Platform);
             }
@@ -58,7 +56,13 @@ namespace XamarinForms.Client
 
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
-            var userContext = await _authService.AcquireUserContextForSpecificScope(_scopes.FirstOrDefault());
+            //var userContext = await _authService.AcquireUserContextForSpecificScope(_scopes.FirstOrDefault());
+            var userContect = await _authService.SignIn();
+        }
+
+        private async void Button_SignOut(object sender, EventArgs e)
+        {
+            await _authService.SignOut();
         }
     }
 }
