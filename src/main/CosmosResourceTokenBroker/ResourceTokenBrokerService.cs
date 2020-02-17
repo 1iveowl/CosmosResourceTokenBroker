@@ -21,7 +21,7 @@ namespace CosmosResourceTokenBroker
 
         private readonly TimeSpan _resourceTokenTtl;
 
-        private string GetPermissionUserId(string userId, IPermissionScope permissionScope) => $"{userId}-{permissionScope.Scope}";
+        private static string GetPermissionUserId(string userId, IPermissionScope permissionScope) => $"{userId}-{permissionScope.Scope}";
 
         public ResourceTokenBrokerService(
             string endpointUrl, 
@@ -165,7 +165,7 @@ namespace CosmosResourceTokenBroker
             {
                 var container = _database.GetContainer(_collectionId);
 
-                var partitionKeyValue = userId.ToPartitionKeyBy2(permissionScope.PermissionMode);
+                var partitionKeyValue = userId.ToPartitionKeyBy(permissionScope.PermissionMode);
 
                 var partitionKey = new PartitionKey(permissionId);
                 

@@ -8,16 +8,7 @@ namespace CosmosResourceTokenBroker
 {
     internal static class Utility
     {
-        internal static string ToPartitionKeyBy(this User user, PermissionModeKind permissionMode) => permissionMode switch
-        {
-            PermissionModeKind.SharedRead => "shared",
-            PermissionModeKind.UserReadWrite => $"user-{user.Id}",
-            PermissionModeKind.UserRead => $"user-{user.Id}-readonly",
-            _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode,
-                "Unknown permission mode")
-        };
-
-        internal static string ToPartitionKeyBy2(this string userId, PermissionModeKind permissionMode) => permissionMode switch
+        internal static string ToPartitionKeyBy(this string userId, PermissionModeKind permissionMode) => permissionMode switch
         {
             PermissionModeKind.SharedRead => "shared",
             PermissionModeKind.UserReadWrite => $"user-{userId}",
@@ -28,8 +19,8 @@ namespace CosmosResourceTokenBroker
 
         internal static string ToPermissionIdBy(this string userId, string scope) => $"{userId}{PermissionScopePrefix}{scope}";
 
-        internal static IPermissionScope ToPermissionScope(this PermissionProperties pp) =>
-            KnownPermissionScopes?.FirstOrDefault(s => s?.Scope == pp.Id?.Split(PermissionScopePrefix)[1]);
+        //internal static IPermissionScope ToPermissionScope(this PermissionProperties pp) =>
+        //    KnownPermissionScopes?.FirstOrDefault(s => s?.Scope == pp.Id?.Split(PermissionScopePrefix)[1]);
 
 
         internal static PermissionMode ToCosmosPermissionMode(this PermissionModeKind permissionMode) => permissionMode switch
