@@ -14,5 +14,7 @@ namespace CosmosResourceToken.Core.Model
         string Id { get; }
 
         DateTime ExpiresUtc { get; }
+
+        string PartitionKey { get; }
     }
 }

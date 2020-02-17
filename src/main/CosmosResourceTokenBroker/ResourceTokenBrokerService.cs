@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Broker;
 using CosmosResourceToken.Core.Model;
 using Microsoft.Azure.Cosmos;
+using MoreLinq;
 using Newtonsoft.Json.Linq;
 using static CosmosResourceToken.Core.Model.Constants;
 
@@ -15,8 +15,6 @@ namespace CosmosResourceTokenBroker
 {
     public class ResourceTokenBrokerService : IResourceTokenBrokerService
     {
-
-
         private readonly CosmosClient _cosmosClient;
         private readonly Database _database;
         private readonly string _collectionId;
@@ -31,10 +29,17 @@ namespace CosmosResourceTokenBroker
             string collectionId,
             TimeSpan? resourceTokenTtl = default)
         {
-            _cosmosClient = new CosmosClient(endpointUrl, key);
-            _database = _cosmosClient.GetDatabase(databaseId);
             _collectionId = collectionId;
             _endpointUrl = endpointUrl;
+
+            //var clientOptions = new CosmosClientOptions
+            //{
+            //    AllowBulkExecution = true
+            //};
+
+            _cosmosClient = new CosmosClient(endpointUrl, key);
+
+            _database = _cosmosClient.GetDatabase(databaseId);
 
             if (resourceTokenTtl is null)
             {
@@ -52,8 +57,7 @@ namespace CosmosResourceTokenBroker
                 cancellationToken);
 
             return await GetOrCreateUserPermissions(
-                user, 
-                permissionscopes,
+                user,
                 cancellationToken);
         }
 
@@ -63,7 +67,9 @@ namespace CosmosResourceTokenBroker
             {
                 var user = _database.GetUser(userid);
 
-                return user;
+                var userProperties = await user.ReadAsync(cancellationToken:ct);
+                
+                return userProperties.User;
             }
             catch (CosmosException ex)
             {
@@ -81,35 +87,61 @@ namespace CosmosResourceTokenBroker
         }
 
         private async Task<IResourcePermissionResponse> GetOrCreateUserPermissions(
+            User user,
+            CancellationToken ct)
+        {
+            var permissionIterator = user.GetPermissionQueryIterator<PermissionProperties>();
+
+            var existingPermissionsNested = new List<IEnumerable<PermissionProperties>>();
+
+            while (permissionIterator.HasMoreResults)
+            {
+                var permissions = await permissionIterator.ReadNextAsync(ct);
+
+                if (permissions?.Resource.Any() ?? false)
+                {
+                    existingPermissionsNested.Add(permissions?.Resource);
+                }
+            }
+
+            var existingPermissions = existingPermissionsNested.SelectMany(p => p)
+                .DistinctBy(p => p.Id);
+
+            var readPermissionTasks = KnownPermissionScopes
+                .Select(permissionScope => GetOrCreateUserPermission(user, permissionScope, existingPermissions, ct));
+            
+            var resourcePermissions = await Task.WhenAll(readPermissionTasks);
+
+            return new ResourcePermissionResponse(resourcePermissions, user.Id, _endpointUrl);
+        }
+
+        private async Task<IResourcePermission> GetOrCreateUserPermission(
             User user, 
-            IEnumerable<IPermissionScope> permissionscopes, 
+            IPermissionScope permissionScope,
+            IEnumerable<PermissionProperties> existingPermissions,
             CancellationToken ct)
         {
             try
             {
+                var permissionId = user.ToPermissionIdBy(permissionScope.Scope);
 
-                var readPermissionTasks = KnownPermissionScopes
-                    .Select(kps => user.GetPermission(user.ToPermissionIdForScope(kps.Scope)))
-                    .Select(permission => permission.ReadAsync(Convert.ToInt32(_resourceTokenTtl.TotalSeconds), cancellationToken:ct));
+                var existingPermission = existingPermissions.FirstOrDefault(p => p.Id == permissionId);
 
-                var permissionResponses = await Task.WhenAll(readPermissionTasks);
+                if (!(existingPermission is null))
+                {
+                    var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
 
-                var resourcePermissions = permissionResponses
-                    .Where(permissionResponse => !(permissionResponse?.Resource is null))
-                    .Select(permissionResponse => permissionResponse.Resource)
-                    .Select(permissionProperties =>
-                    {
-                        var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
+                    var partitionKeyValueJson = existingPermission.ResourcePartitionKey.GetValueOrDefault().ToString();
 
-                        var permissionScope = permissionProperties.ToPermissionScope();
+                    var partitionKeyValue = JArray.Parse(partitionKeyValueJson)?.FirstOrDefault()?.Value<string>();
 
-                        var permissionId = permissionProperties?.Id;
-                        var resourceToken = permissionProperties?.Token;
-
-                        return new ResourcePermission(permissionScope, resourceToken, permissionId, expiresUtc);
-                    });
-
-                return new ResourcePermissionResponse(resourcePermissions, user.Id, _endpointUrl);
+                    return new ResourcePermission(
+                        permissionScope,
+                        existingPermission.Token,
+                        existingPermission.Id,
+                        partitionKeyValue,
+                        expiresUtc);
+                }
             }
             catch (CosmosException ex)
             {
@@ -119,78 +151,47 @@ namespace CosmosResourceTokenBroker
                 }
             }
 
-            return await CreateNewPermissions(user, permissionscopes, ct);
+            return await CreateNewPermission(user, permissionScope, ct);
         }
 
-
-        private async Task<IResourcePermissionResponse> CreateNewPermissions(
+        private async Task<IResourcePermission> CreateNewPermission(
             User user,
-            IEnumerable<IPermissionScope> permissionScopes, 
+            IPermissionScope permissionScope,
             CancellationToken ct)
         {
             try
             {
                 var container = _database.GetContainer(_collectionId);
 
-                // Create a list of tasks CreatePermission
-                var taskListPermissionCreate = permissionScopes
-                    .Select(ps =>
-                    {
-                        var partitionKey = new PartitionKey(user.ToPartitionKeyFromPermissionMode(ps.PermissionMode));
+                var partitionKeyValue = user.ToPartitionKeyBy(permissionScope.PermissionMode);
 
-                        var permissionProperties = new PermissionProperties(
-                            user.ToPermissionIdForScope(ps.Scope),
-                            ps.PermissionMode.ToCosmosPermissionMode(),
-                            container,
-                            partitionKey);
-                        
-                        return (partitionKey, permissionProperties, ps, ct, user, ps.Scope);
-                    })
-                    .Select(tuple => CreatePermissionResponse(tuple.user, container, tuple.ps, tuple.permissionProperties, tuple.partitionKey, tuple.ct));
-
-                // Run list of task in parallel
-                var resourcePermissions = await Task.WhenAll(taskListPermissionCreate);
-
-                return new ResourcePermissionResponse
-                {
-                    UserId = user.Id,
-                    EndpointUrl = _endpointUrl,
-                    ResourcePermissions = resourcePermissions
-                };
-            }
-            catch (Exception ex)
-            {
-                throw new ResourceTokenBrokerServiceException($"Unable to create new permission for user. Unhandled exception: {ex}");
-            }
-        }
-        
-        private async Task<IResourcePermission> CreatePermissionResponse(
-            User user, 
-            Container container,
-            IPermissionScope permissionScope,
-            PermissionProperties permissionProperties,
-            PartitionKey partitionKey,
-            CancellationToken ct)
-        {
-            try
-            {
-                var initializeObjectName = user.ToPartitionKeyFromPermissionMode(permissionScope.PermissionMode);
-
-                await InitializeObjectForPartition(container, user, partitionKey, initializeObjectName, ct);
+                var partitionKey = new PartitionKey(partitionKeyValue);
                 
-                var permissionResponse = await user.CreatePermissionAsync(
-                    permissionProperties,
-                    Convert.ToInt32(_resourceTokenTtl.TotalSeconds), 
-                    cancellationToken: ct);
+                var permissionProperties = new PermissionProperties(
+                    user.ToPermissionIdBy(permissionScope.Scope),
+                    permissionScope.PermissionMode.ToCosmosPermissionMode(),
+                    container,
+                    partitionKey);
 
                 var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
 
+                var permissionResponse = await user.CreatePermissionAsync(
+                    permissionProperties,
+                    Convert.ToInt32(_resourceTokenTtl.TotalSeconds),
+                    cancellationToken: ct);
+                
                 if (!(permissionResponse?.Resource?.Token is null))
                 {
-                    return new ResourcePermission(permissionScope, permissionResponse.Resource.Token, permissionResponse.Resource.Token, expiresUtc);
+                    return new ResourcePermission(
+                        permissionScope, 
+                        permissionResponse.Resource.Token, 
+                        permissionResponse.Resource.Id,
+                        partitionKeyValue,
+                        expiresUtc);
                 }
 
                 throw new ResourceTokenBrokerServiceException($"Unable to create new permission for user. Status code: {permissionResponse?.StatusCode}");
+
             }
             catch (Exception ex)
             {
@@ -198,42 +199,6 @@ namespace CosmosResourceTokenBroker
             }
         }
 
-        private async Task InitializeObjectForPartition(Container container, User user, PartitionKey partitionKey, string initializeObjectName, CancellationToken ct)
-        {
-            try
-            {
-                var response = await container.ReadItemAsync<InitObject>(user.Id, partitionKey, cancellationToken:ct);
-
-                if (!(response is null))
-                {
-                    return;
-                }
-
-            }
-            catch (CosmosException ex)
-            {
-                if (ex.StatusCode != HttpStatusCode.NotFound)
-                {
-                    throw new ResourceTokenBrokerServiceException($"Unhandled read item error, Status Code: {ex.StatusCode.ToString()}", ex);
-                }
-            }
-
-            await CreateForPartition(container, user, partitionKey, initializeObjectName, ct);
-        }
-
-        private async Task CreateForPartition(Container container, User user, PartitionKey partitionKey, string initializeObjectName, CancellationToken ct)
-        {
-            try
-            {
-                var obj = new InitObject($"dummy-{initializeObjectName}", initializeObjectName);
-                
-                var item = await container.CreateItemAsync(obj, partitionKey, cancellationToken: ct);
-            }
-            catch (Exception ex)
-            {
-                throw new ResourceTokenBrokerServiceException("Unable to initialize partition with object.", ex);
-            }
-        }
         
         public ValueTask DisposeAsync()
         {
@@ -245,11 +210,20 @@ namespace CosmosResourceTokenBroker
 
     internal static class Utility
     {
-        internal static string ToPartitionKeyFromPermissionMode(this User user, PermissionModeKind permissionMode) => permissionMode == PermissionModeKind.SharedRead
-            ? $"shared"
-            : $"user-{user.Id}";
+        internal static string ToPartitionKeyBy(this User user, PermissionModeKind permissionMode) => permissionMode switch
+        {
+            PermissionModeKind.SharedRead => "shared",
+            PermissionModeKind.UserReadWrite => $"user-{user.Id}",
+            PermissionModeKind.UserRead => $"user-{user.Id}-readonly",
+            _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode,
+                "Unknown permission mode")
+        };
+                                                                                                      
+            //== PermissionModeKind.SharedRead
+            //? $"shared"
+            //: $"user-{user.Id}";
 
-        internal static string ToPermissionIdForScope(this User user, string scope) => $"{user.Id}{PermissionScopePrefix}{scope}";
+        internal static string ToPermissionIdBy(this User user, string scope) => $"{user.Id}{PermissionScopePrefix}{scope}";
 
         internal static IPermissionScope ToPermissionScope(this PermissionProperties pp) =>
             KnownPermissionScopes?.FirstOrDefault(s => s?.Scope == pp.Id?.Split(PermissionScopePrefix)[1]);

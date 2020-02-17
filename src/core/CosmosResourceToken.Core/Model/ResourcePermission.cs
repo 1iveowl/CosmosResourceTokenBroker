@@ -21,25 +21,31 @@ namespace CosmosResourceToken.Core.Model
         [JsonProperty(PropertyName = "expires")]
         public DateTime ExpiresUtc { get; set; }
 
+        [JsonProperty(PropertyName = "partitionKey")]
+        public string PartitionKey { get; }
+
         public ResourcePermission() { }
 
         public ResourcePermission(
             IPermissionScope permissionScope, 
             string resourceToken,
             string id,
-            DateTime expiresUtc) : this(permissionScope.PermissionMode, permissionScope.Scope, resourceToken, id, expiresUtc) { }
+            string partitionKey,
+            DateTime expiresUtc) : this(permissionScope.PermissionMode, permissionScope.Scope, resourceToken, id, partitionKey, expiresUtc) { }
 
         public ResourcePermission(
             PermissionModeKind permissionMode,
             string scope,
             string resourceToken,
             string id,
+            string partitionKey,
             DateTime expiresUtc)
         {
             Scope = scope;
             PermissionMode = permissionMode;
             ResourceToken = resourceToken;
             Id = id;
+            PartitionKey = partitionKey;
             ExpiresUtc = expiresUtc;
         }
     }
