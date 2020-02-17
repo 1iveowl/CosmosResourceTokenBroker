@@ -1,14 +1,13 @@
-﻿using System;
+﻿using CosmosResourceToken.Core.Broker;
+using CosmosResourceToken.Core.Model;
+using Microsoft.Azure.Cosmos;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core.Broker;
-using CosmosResourceToken.Core.Model;
-using Microsoft.Azure.Cosmos;
-using MoreLinq;
-using Newtonsoft.Json.Linq;
 using static CosmosResourceToken.Core.Model.Constants;
 
 namespace CosmosResourceTokenBroker
@@ -21,6 +20,8 @@ namespace CosmosResourceTokenBroker
         private readonly string _endpointUrl;
 
         private readonly TimeSpan _resourceTokenTtl;
+
+        private string GetPermissionUserId(string userId, IPermissionScope permissionScope) => $"{userId}-{permissionScope.Scope}";
 
         public ResourceTokenBrokerService(
             string endpointUrl, 
@@ -52,96 +53,95 @@ namespace CosmosResourceTokenBroker
             IEnumerable<IPermissionScope> permissionscopes, 
             CancellationToken cancellationToken = default)
         {
-            var user = await GetOrCreateCosmosUser(
+            var permissionUsers = await GetOrCreateUsers(
                 userId, 
                 cancellationToken);
 
-            return await GetOrCreateUserPermissions(
-                user,
+            return await GetOrCreateUsersPermissions(
+                permissionUsers,
+                userId,
                 cancellationToken);
         }
 
-        private async Task<User> GetOrCreateCosmosUser(string userid, CancellationToken ct)
+        private async Task<IEnumerable<(User user, IPermissionScope permissionScope)>> GetOrCreateUsers(string userId, CancellationToken ct)
         {
+            var permissionUserTasks = KnownPermissionScopes
+                .Select(permissionScope => GetOrCreateUser(userId, permissionScope, ct));
+
+            return await Task.WhenAll(permissionUserTasks);
+        }
+
+        private async Task<(User user, IPermissionScope permissionScope)> GetOrCreateUser(string userId, IPermissionScope permissionScope, CancellationToken ct)
+        {
+            var permissionUserId = GetPermissionUserId(userId, permissionScope);
+
             try
             {
-                var user = _database.GetUser(userid);
+                var user = _database.GetUser(permissionUserId);
 
-                var userProperties = await user.ReadAsync(cancellationToken:ct);
-                
-                return userProperties.User;
+                var userProperties = await user.ReadAsync(cancellationToken: ct);
+
+                return (userProperties.User, permissionScope);
             }
             catch (CosmosException ex)
             {
                 if (ex.StatusCode == HttpStatusCode.NotFound)
                 {
-                    return await _database.CreateUserAsync(userid, cancellationToken: ct);
+                    var user = await _database.CreateUserAsync(permissionUserId, cancellationToken: ct);
+
+                    return (user, permissionScope);
                 }
             }
             catch (Exception ex)
             {
-                throw new ResourceTokenBrokerServiceException($"Unable to get user. Unhandled exception: {ex}");
+                throw new ResourceTokenBrokerServiceException($"Unable to get or create user: {permissionUserId}. Unhandled exception: {ex}");
             }
 
-            return null;
+            return (null, permissionScope);
         }
 
-        private async Task<IResourcePermissionResponse> GetOrCreateUserPermissions(
-            User user,
+        private async Task<IResourcePermissionResponse> GetOrCreateUsersPermissions(
+            IEnumerable<(User user, IPermissionScope permissionScope)> usersWithPermisssionScope,
+            string userId,
             CancellationToken ct)
         {
-            var permissionIterator = user.GetPermissionQueryIterator<PermissionProperties>();
+            var getOrCreateUserPermissionsTask = usersWithPermisssionScope
+                .Where(tuple => !(tuple.user is null))
+                .Select(tuple => GetOrCreateUserPermission(tuple.user, userId, tuple.permissionScope, ct));
 
-            var existingPermissionsNested = new List<IEnumerable<PermissionProperties>>();
+            var permissions = await Task.WhenAll(getOrCreateUserPermissionsTask);
 
-            while (permissionIterator.HasMoreResults)
-            {
-                var permissions = await permissionIterator.ReadNextAsync(ct);
+            return new ResourcePermissionResponse(permissions, userId, _endpointUrl);
 
-                if (permissions?.Resource.Any() ?? false)
-                {
-                    existingPermissionsNested.Add(permissions?.Resource);
-                }
-            }
-
-            var existingPermissions = existingPermissionsNested.SelectMany(p => p)
-                .DistinctBy(p => p.Id);
-
-            var readPermissionTasks = KnownPermissionScopes
-                .Select(permissionScope => GetOrCreateUserPermission(user, permissionScope, existingPermissions, ct));
-            
-            var resourcePermissions = await Task.WhenAll(readPermissionTasks);
-
-            return new ResourcePermissionResponse(resourcePermissions, user.Id, _endpointUrl);
         }
-
         private async Task<IResourcePermission> GetOrCreateUserPermission(
             User user, 
+            string userId,
             IPermissionScope permissionScope,
-            IEnumerable<PermissionProperties> existingPermissions,
             CancellationToken ct)
         {
+            var permissionId = userId.ToPermissionIdBy(permissionScope.Scope);
+
             try
             {
-                var permissionId = user.ToPermissionIdBy(permissionScope.Scope);
+                var permission = user.GetPermission(permissionId);
 
-                var existingPermission = existingPermissions.FirstOrDefault(p => p.Id == permissionId);
+                var permissionResponse = await permission.ReadAsync(
+                    Convert.ToInt32(_resourceTokenTtl.TotalSeconds),
+                    cancellationToken: ct);
 
-                if (!(existingPermission is null))
-                {
-                    var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
+                var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
 
-                    var partitionKeyValueJson = existingPermission.ResourcePartitionKey.GetValueOrDefault().ToString();
+                var partitionKeyValueJson = permissionResponse.Resource.ResourcePartitionKey.GetValueOrDefault().ToString();
 
-                    var partitionKeyValue = JArray.Parse(partitionKeyValueJson)?.FirstOrDefault()?.Value<string>();
+                var partitionKeyValue = JArray.Parse(partitionKeyValueJson)?.FirstOrDefault()?.Value<string>();
 
-                    return new ResourcePermission(
-                        permissionScope,
-                        existingPermission.Token,
-                        existingPermission.Id,
-                        partitionKeyValue,
-                        expiresUtc);
-                }
+                return new ResourcePermission(
+                    permissionScope,
+                    permissionResponse.Resource.Token,
+                    permissionResponse.Resource.Id,
+                    partitionKeyValue,
+                    expiresUtc);
             }
             catch (CosmosException ex)
             {
@@ -151,11 +151,13 @@ namespace CosmosResourceTokenBroker
                 }
             }
 
-            return await CreateNewPermission(user, permissionScope, ct);
+            return await CreateNewPermission(user, userId, permissionId, permissionScope, ct);
         }
 
         private async Task<IResourcePermission> CreateNewPermission(
             User user,
+            string userId,
+            string permissionId,
             IPermissionScope permissionScope,
             CancellationToken ct)
         {
@@ -163,12 +165,12 @@ namespace CosmosResourceTokenBroker
             {
                 var container = _database.GetContainer(_collectionId);
 
-                var partitionKeyValue = user.ToPartitionKeyBy(permissionScope.PermissionMode);
+                var partitionKeyValue = userId.ToPartitionKeyBy2(permissionScope.PermissionMode);
 
-                var partitionKey = new PartitionKey(partitionKeyValue);
+                var partitionKey = new PartitionKey(permissionId);
                 
                 var permissionProperties = new PermissionProperties(
-                    user.ToPermissionIdBy(permissionScope.Scope),
+                    permissionId,
                     permissionScope.PermissionMode.ToCosmosPermissionMode(),
                     container,
                     partitionKey);
@@ -206,36 +208,5 @@ namespace CosmosResourceTokenBroker
             
             return new ValueTask();
         }
-    }
-
-    internal static class Utility
-    {
-        internal static string ToPartitionKeyBy(this User user, PermissionModeKind permissionMode) => permissionMode switch
-        {
-            PermissionModeKind.SharedRead => "shared",
-            PermissionModeKind.UserReadWrite => $"user-{user.Id}",
-            PermissionModeKind.UserRead => $"user-{user.Id}-readonly",
-            _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode,
-                "Unknown permission mode")
-        };
-                                                                                                      
-            //== PermissionModeKind.SharedRead
-            //? $"shared"
-            //: $"user-{user.Id}";
-
-        internal static string ToPermissionIdBy(this User user, string scope) => $"{user.Id}{PermissionScopePrefix}{scope}";
-
-        internal static IPermissionScope ToPermissionScope(this PermissionProperties pp) =>
-            KnownPermissionScopes?.FirstOrDefault(s => s?.Scope == pp.Id?.Split(PermissionScopePrefix)[1]);
-
-
-        internal static PermissionMode ToCosmosPermissionMode(this PermissionModeKind permissionMode) => permissionMode switch
-        {
-            PermissionModeKind.UserReadWrite => PermissionMode.All,
-            PermissionModeKind.UserRead => PermissionMode.Read,
-            PermissionModeKind.SharedRead => PermissionMode.Read,
-            _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode,
-                "Unknown permission mode")
-        };
     }
 }
