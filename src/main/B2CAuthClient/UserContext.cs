@@ -1,31 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CosmosResourceToken.Core.Client;
+using B2CAuthClient.Abstract;
+using B2CAuthClient.Utility;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
-using XamarinForms.Client.Authentication.Interface;
-using static XamarinForms.Client.Utility.ExtensionMethod;
 
-namespace XamarinForms.Client.Authentication.Model
+namespace B2CAuthClient
 {
     public class UserContext : IUserContext
     {
+        public bool IsLoggedOn { get; }
         public string Name { get; }
         public string UserIdentifier { get; }
         public bool NewUser { get; }
         public string Scope { get; }
-        public bool IsLoggedOn { get; }
         public string GivenName { get; }
         public string FamilyName { get;  }
         public string Province { get; }
         public string PostalCode { get; }
         public string Country { get; }
-        public IEnumerable<string> EmailAddresses { get;  }
+        public IEnumerable<string> EmailAddresses { get; }
         public string JobTitle { get; }
         public string StreetAddress { get; }
         public string City { get; }
         public string AccessToken { get; }
+        public DateTime AccessTokenExpires { get; }
+        public bool HasAccessTokenExpired => AccessTokenExpires < DateTime.UtcNow;
+
+        internal UserContext()
+        {
+
+        }
+
+        internal UserContext(IUserContext userContext, bool isLoggedOn)
+        {
+            IsLoggedOn = isLoggedOn;
+            Name = userContext.Name;
+            UserIdentifier = userContext.UserIdentifier;
+            NewUser = userContext.NewUser;
+            Scope = userContext.Scope;
+            GivenName = userContext.GivenName;
+            FamilyName = userContext.FamilyName;
+            Province = userContext.Province;
+            PostalCode = userContext.PostalCode;
+            Country = userContext.Country;
+            EmailAddresses = userContext.EmailAddresses;
+            JobTitle = userContext.JobTitle;
+            StreetAddress = userContext.StreetAddress;
+            City = userContext.City;
+            AccessToken = userContext.AccessToken;
+            AccessTokenExpires = userContext.AccessTokenExpires;
+        }
 
         internal UserContext(AuthenticationResult authResult)
         {
@@ -60,6 +86,11 @@ namespace XamarinForms.Client.Authentication.Model
             PostalCode = jwtPayload["postalCode"]?.ToString();
             Country = jwtPayload["country"]?.ToString();
             JobTitle = jwtPayload["jobTitle"]?.ToString();
+
+            if (double.TryParse(jwtPayload["exp"]?.ToString(), out var expiresEpoch))
+            {
+                AccessTokenExpires = expiresEpoch.UnixTimeStampToDateTimeUtc();
+            }
 
             EmailAddresses = ((JArray)jwtPayload["emails"])?.Select(emailAddress => emailAddress?.ToString());
 

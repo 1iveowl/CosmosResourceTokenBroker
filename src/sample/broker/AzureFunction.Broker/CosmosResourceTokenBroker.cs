@@ -99,12 +99,21 @@ namespace AzureFunction.Broker
                                                         $"{string.Join(", ", KnownPermissionScopes.Select(ks => ks.Scope))}", log);
             }
 
-            await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
+            try
+            {
+                await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
 
-            // Getting the Resource Permission Tokens
-            var permissionToken = await brokerService.Get(userObjectId, permissionScopes);
+                // Getting the Resource Permission Tokens
+                var permissionToken = await brokerService.Get(userObjectId, permissionScopes);
 
-            return (IActionResult) new OkObjectResult(permissionToken);
+                return (IActionResult) new OkObjectResult(permissionToken);
+            }
+            catch (Exception ex)
+            {
+                return LogErrorAndCreateBadObjectResult($"Unable to acquire resource token from Cosmos DB " +
+                                                        $"for user with id: {userObjectId} " +
+                                                        $"for permission scopes: {string.Join(", ", permissionScopes)}.", log, ex);
+            }
         }
 
         private static BadRequestObjectResult LogErrorAndCreateBadObjectResult(string error, ILogger log, Exception ex = default)

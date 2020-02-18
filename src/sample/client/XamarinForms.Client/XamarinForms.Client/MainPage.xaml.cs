@@ -3,11 +3,14 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using B2CAuthClient;
+using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
 using Newtonsoft.Json.Linq;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using XamarinForms.Client.Authentication;
+using XamarinForms.Client.Authentication.Interface;
 
 namespace XamarinForms.Client
 {
@@ -48,7 +51,11 @@ namespace XamarinForms.Client
                     signUpSignInFlowName,
                     scopes,
                     "com.microsoft.adalcache",
-                    DeviceInfo.Platform);
+                    () => DeviceInfo.Platform == DevicePlatform.Android,
+                    () => DeviceInfo.Platform == DevicePlatform.iOS 
+                          || DeviceInfo.Platform == DevicePlatform.watchOS 
+                          || DeviceInfo.Platform == DevicePlatform.tvOS,
+                    () => DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow());
             }
 
             InitializeComponent();

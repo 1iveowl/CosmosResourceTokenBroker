@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+
 using CosmosResourceToken.Core.Model;
 using Microsoft.Azure.Cosmos;
 using static CosmosResourceToken.Core.Model.Constants;

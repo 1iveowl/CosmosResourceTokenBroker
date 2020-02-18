@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 
-namespace XamarinForms.Client.Utility
+namespace B2CAuthClient.Utility
 {
     public static class ExtensionMethod
     {
@@ -26,6 +26,14 @@ namespace XamarinForms.Client.Utility
                 .ToBase64UrlDecoded();
 
             return JObject.Parse(jwtPayload);
+        }
+
+        public static DateTime UnixTimeStampToDateTimeUtc(this double unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
+            return dateTime;
         }
     }
 }

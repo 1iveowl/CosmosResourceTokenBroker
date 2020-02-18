@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Cosmos\" />
+    <ProjectReference Include="..\B2CAuthClient.Abstract\B2CAuthClient.Abstract.csproj" />
   </ItemGroup>
 
 </Project>

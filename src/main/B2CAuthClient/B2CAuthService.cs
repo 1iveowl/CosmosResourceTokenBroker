@@ -1,50 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core.Client;
+using B2CAuthClient.Abstract;
 using Microsoft.Identity.Client;
-using Xamarin.Essentials;
-using Xamarin.Forms;
-using XamarinForms.Client.Authentication.Interface;
-using XamarinForms.Client.Authentication.Model;
 
-namespace XamarinForms.Client.Authentication
+namespace B2CAuthClient
 {
     public class B2CAuthService : IB2CAuthService
     {
         private readonly IPublicClientApplication _pca;
-        private readonly IEnumerable<string> _scopes;
+        private readonly IEnumerable<string> _defaultScopes;
         private readonly string _signUpSignInFlowName;
 
-        internal B2CAuthService(
-            string b2chostName, 
+        public IUserContext CurrentUserContext { get; private set; }
+
+        public B2CAuthService(
+            string b2cHostName, 
             string tenantId, 
             string clientId, 
             string signUpSignInFlowName, 
-            IEnumerable<string> scopes, 
+            IEnumerable<string> defaultScopes, 
             string iOsChainGroup, 
-            DevicePlatform devicePlatform)
+            Func<bool> isAndroidDeviceFunc,
+            Func<bool> isAppleDeviceFunc,
+            Func<object> getCurrentParentWindowsForAndroidFunc)
         {
-            _scopes = scopes;
+            _defaultScopes = defaultScopes;
             _signUpSignInFlowName = signUpSignInFlowName;
             
             var builder = PublicClientApplicationBuilder.Create(clientId)
-                .WithB2CAuthority($"https://{b2chostName}" +
+                .WithB2CAuthority($"https://{b2cHostName}" +
                                   $"/tfp/{tenantId}" +
                                   $"/{signUpSignInFlowName}")
                 .WithRedirectUri($"msal{clientId}://auth");
 
-            if (devicePlatform == DevicePlatform.Android)
+            if (isAndroidDeviceFunc())
             {
-                // Android utilizes: https://github.com/jamesmontemagno/CurrentActivityPlugin
-                builder.WithParentActivityOrWindow(() =>
-                    DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow());
+                builder.WithParentActivityOrWindow(getCurrentParentWindowsForAndroidFunc);
             }
 
-            if (devicePlatform == DevicePlatform.iOS 
-                || devicePlatform == DevicePlatform.tvOS 
-                || devicePlatform == DevicePlatform.watchOS)
+            if (isAppleDeviceFunc())
             {
                 builder.WithIosKeychainSecurityGroup(iOsChainGroup);
             }
@@ -52,9 +49,22 @@ namespace XamarinForms.Client.Authentication
             _pca = builder.Build();
         }
 
-        public async Task<IUserContext> SignIn(CancellationToken cancellationToken = default)
+        public async Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default)
         {
-            return await AcquireToken(_scopes, cancellationToken);
+            IUserContext userContext;
+
+            if (scopes is null)
+            {
+                userContext = await AcquireToken(silentlyOnly, _defaultScopes, cancellationToken);
+            }
+            else
+            {
+                userContext = await AcquireToken(silentlyOnly, scopes, cancellationToken);
+            }
+
+            CurrentUserContext = userContext;
+
+            return userContext;
         }
         
         public async Task SignOut(CancellationToken cancellationToken = default)
@@ -62,18 +72,13 @@ namespace XamarinForms.Client.Authentication
             var account = await GetAccount();
 
             await _pca.RemoveAsync(account);
+
+            CurrentUserContext = new UserContext(CurrentUserContext, false);
+
         }
 
-
-        //See this: https://medium.com/@smartdeveloper/azure-functions-rest-api-security-with-msal-and-azure-ad-c9cd75d3316e
-        public async Task<IUserContext> AcquireUserContextForSpecificScope(string scope, CancellationToken cancellationToken = default)
+        private async Task<IUserContext> AcquireToken(bool silentlyOnly, IEnumerable<string> scopes, CancellationToken ct)
         {
-            return await AcquireToken(new List<string> { scope }, cancellationToken);
-        }
-
-        private async Task<IUserContext> AcquireToken(IEnumerable<string> scopes, CancellationToken ct)
-        {
-            //TODO Read this: https://medium.com/@smartdeveloper/azure-functions-rest-api-security-with-msal-and-azure-ad-c9cd75d3316e
             var account = await GetAccount();
 
             try
@@ -83,15 +88,20 @@ namespace XamarinForms.Client.Authentication
 
                 return new UserContext(authResult);
             }
-            catch (MsalUiRequiredException)
+            catch (MsalUiRequiredException ex)
             {
+                if (silentlyOnly)
+                {
+                    throw ex;
+                }
+
                 return await SignInInteractively(account, ct);
             }
         }
 
         private async Task<IUserContext> SignInInteractively(IAccount account, CancellationToken ct)
         {
-            var authResult = await _pca.AcquireTokenInteractive(_scopes)
+            var authResult = await _pca.AcquireTokenInteractive(_defaultScopes)
                 .WithAccount(account)
                 .ExecuteAsync(ct);
 

@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace CosmosResourceToken.Core.Client
+namespace B2CAuthClient.Abstract
 {
     [Preserve(AllMembers = true)]
     public interface IUserContext
     {
+        bool IsLoggedOn { get; }
         string Name { get; }
         string UserIdentifier { get; }
         bool NewUser { get; }
         string Scope { get; }
-        bool IsLoggedOn { get;}
         string GivenName { get;}
         string FamilyName { get;}
         string Province { get; }
@@ -19,5 +21,7 @@ namespace CosmosResourceToken.Core.Client
         string StreetAddress { get; }
         string City { get; }
         string AccessToken { get;}
+        DateTime AccessTokenExpires { get; }
+        bool HasAccessTokenExpired { get; }
     }
 }

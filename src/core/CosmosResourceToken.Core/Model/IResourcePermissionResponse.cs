@@ -9,5 +9,8 @@ namespace CosmosResourceToken.Core.Model
         IEnumerable<IResourcePermission> ResourcePermissions { get; }
         string UserId { get; }
         string EndpointUrl { get; }
+        string DatabaseId { get; }
+        string CollectionId { get; }
+
     }
 }
