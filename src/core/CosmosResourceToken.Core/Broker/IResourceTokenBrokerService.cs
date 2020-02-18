@@ -9,6 +9,6 @@ namespace CosmosResourceToken.Core.Broker
     [Preserve(AllMembers = true)]
     public interface IResourceTokenBrokerService : IAsyncDisposable
     {
-        Task<IResourcePermissionResponse> Get(string userId, IEnumerable<IPermissionScope> permissionscopes, CancellationToken cancellationToken = default);
+        Task<IResourcePermissionResponse> Get(string userId, IEnumerable<IPermissionScope> permissionScopes, CancellationToken cancellationToken = default);
     }
 }
