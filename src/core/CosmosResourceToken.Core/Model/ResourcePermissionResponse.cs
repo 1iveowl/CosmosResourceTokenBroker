@@ -17,17 +17,27 @@ namespace CosmosResourceToken.Core.Model
         [JsonProperty(PropertyName = "endpointUrl")]
         public string EndpointUrl { get; set; }
 
+        [JsonProperty(PropertyName = "databaseId")]
+        public string DatabaseId { get; }
+
+        [JsonProperty(PropertyName = "collectionId")]
+        public string CollectionId { get; }
+
         public ResourcePermissionResponse() { }
 
         public ResourcePermissionResponse(
             IEnumerable<IResourcePermission> permissions,
             string userId,
-            string endpointUrl)
+            string endpointUrl, 
+            string databaseId,
+            string collectionId)
         {
             ResourcePermissions = permissions;
  
             UserId = userId;
             EndpointUrl = endpointUrl;
+            DatabaseId = databaseId;
+            CollectionId = collectionId;
         }
     }
 }

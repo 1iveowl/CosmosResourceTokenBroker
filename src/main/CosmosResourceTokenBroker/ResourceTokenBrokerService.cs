@@ -16,6 +16,7 @@ namespace CosmosResourceTokenBroker
     {
         private readonly CosmosClient _cosmosClient;
         private readonly Database _database;
+        private readonly string _databaseId;
         private readonly string _collectionId;
         private readonly string _endpointUrl;
 
@@ -30,6 +31,7 @@ namespace CosmosResourceTokenBroker
             string collectionId,
             TimeSpan? resourceTokenTtl = default)
         {
+            _databaseId = databaseId;
             _collectionId = collectionId;
             _endpointUrl = endpointUrl;
 
@@ -118,7 +120,7 @@ namespace CosmosResourceTokenBroker
 
             var permissions = await Task.WhenAll(getOrCreateUserPermissionsTask);
 
-            return new ResourcePermissionResponse(permissions, userId, _endpointUrl);
+            return new ResourcePermissionResponse(permissions, userId, _endpointUrl, _databaseId, _collectionId);
 
         }
         private async Task<IResourcePermission> GetOrCreateUserPermission(
@@ -232,11 +234,11 @@ namespace CosmosResourceTokenBroker
             }
         }
         
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             _cosmosClient?.Dispose();
             
-            return new ValueTask();
+            await Task.CompletedTask;
         }
     }
 }

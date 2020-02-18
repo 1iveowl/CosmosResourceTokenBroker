@@ -1,19 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceToken.Core.Client
 {
     [Preserve(AllMembers = true)]
     public interface ICosmosTokenClient
     {
-        Task Create<T>(string id, T obj, DefaultPartitionKind defaultPartition);
+        Task Create<T>(T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken);
 
-        Task<T> Read<T>(string id, DefaultPartitionKind defaultPartition);
+        Task<T> Read<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken);
 
-        Task Replace<T>(string id, T obj, DefaultPartitionKind defaultPartition);
+        Task Replace<T>(T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken);
 
-        Task Delete<T>(string id, DefaultPartitionKind defaultPartition);
+        Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken);
 
-        Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition);
+        Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken);
     }
 }

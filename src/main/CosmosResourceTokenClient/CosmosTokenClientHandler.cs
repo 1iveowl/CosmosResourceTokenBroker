@@ -8,7 +8,7 @@ using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceTokenClient
 {
-    public abstract class CosmosTokenClientHandler
+    internal class CosmosTokenClientHandler
     {
         private readonly IB2CAuthService _authService;
         private readonly ResourceTokenBrokerClientService _brokerClient;
@@ -25,14 +25,14 @@ namespace CosmosResourceTokenClient
             _resourceTokenCache = resourceTokenCache;
         }
 
-        protected async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosfunc, PermissionModeKind permissionMode)
+        internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosfunc, PermissionModeKind permissionMode)
         {
             await ValidateLoginState();
             
-            var resourcePermissionResponse = await GetResourceToken(_authService.CurrentUserContext);
+            var resourcePermissionResponse = await AcquireResourceToken(_authService.CurrentUserContext);
 
-            var resourceToken =
-                resourcePermissionResponse?.ResourcePermissions?.FirstOrDefault(p => p?.PermissionMode == permissionMode)?.ResourceToken;
+            var resourceToken = resourcePermissionResponse?.ResourcePermissions?
+                .FirstOrDefault(p => p?.PermissionMode == permissionMode)?.ResourceToken;
 
             if (string.IsNullOrEmpty(resourceToken))
             {
@@ -63,7 +63,7 @@ namespace CosmosResourceTokenClient
             return await cosmosfunc(resourcePermissionResponse);
         }
 
-        private async Task<IResourcePermissionResponse> GetResourceToken(IUserContext userContext)
+        private async Task<IResourcePermissionResponse> AcquireResourceToken(IUserContext userContext)
         {
             if (_resourceTokenCache is null)
             {
