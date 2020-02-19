@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Text.Json;
 using Newtonsoft.Json;
 using static CosmosResourceToken.Core.Model.Constants;
 
@@ -20,7 +19,7 @@ namespace AzureFunction.Broker
         private readonly string _cosmosKey;
         private readonly string _cosmosDatabaseId;
         private readonly string _cosmosCollectionId;
-        private readonly string _partitionKeyHeader;
+        //private readonly string _partitionKeyHeader;
         
         public CosmosResourceTokenBroker()
         {
@@ -29,7 +28,7 @@ namespace AzureFunction.Broker
             _cosmosKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
             _cosmosDatabaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
             _cosmosCollectionId = Environment.GetEnvironmentVariable("CosmosCollectionId");
-            _partitionKeyHeader = Environment.GetEnvironmentVariable("CosmosPartitionKeyHeader");
+            //_partitionKeyHeader = Environment.GetEnvironmentVariable("CosmosPartitionKeyHeader");
         }
 
         [FunctionName("CosmosResourceTokenBroker")]
@@ -105,7 +104,7 @@ namespace AzureFunction.Broker
 
             try
             {
-                await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId, _partitionKeyHeader);
+                await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
 
                 // Getting the Resource Permission Tokens
                 var permissionToken = await brokerService.Get(userObjectId, permissionScopes);

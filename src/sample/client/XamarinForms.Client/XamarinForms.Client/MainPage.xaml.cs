@@ -41,15 +41,15 @@ namespace XamarinForms.Client
                 using var reader = new StreamReader(fileStream);
                 var jsonStr = reader.ReadToEnd();
 
-                var dataObject = JObject.Parse(jsonStr);
+                var configObject = JObject.Parse(jsonStr);
 
-                var b2cHostName = dataObject["B2CHostName"].ToString();
-                var tenantId = dataObject["TenantId"].ToString();
-                var clientId = dataObject["ClientId"].ToString();
-                var signUpSignInFlowName = dataObject["SignUpSignInFlowName"].ToString();
-                var resourceTokenBrokerUrl = dataObject["ResourceTokenBrokerUrl"].ToString();
+                var b2cHostName = configObject["B2CHostName"].ToString();
+                var tenantId = configObject["TenantId"].ToString();
+                var clientId = configObject["ClientId"].ToString();
+                var signUpSignInFlowName = configObject["SignUpSignInFlowName"].ToString();
+                var resourceTokenBrokerUrl = configObject["ResourceTokenBrokerUrl"].ToString();
 
-                var scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
+                var scopes = ((JArray)configObject["Scopes"])?.Select(scope => scope?.ToString());
 
                 _authService = new B2CAuthService(
                     b2cHostName,
@@ -84,16 +84,32 @@ namespace XamarinForms.Client
             await _authService.SignOut();
         }
 
-        private void Button_Save(object sender, EventArgs e)
+        private async void Button_Save(object sender, EventArgs e)
         {
             try
             {
                 var person = new Person(FirstName.Text, LastName.Text);
-                _cosmosTokenClient.Replace($"Person-{_userContext.UserIdentifier}", person, DefaultPartitionKind.UserDocument);
+                await _cosmosTokenClient.Replace($"Person-{_userContext.UserIdentifier}", person, DefaultPartitionKind.UserDocument);
             }
             catch (Exception ex)
             {
                 
+            }
+        }
+
+        private async void Button_ReadShared(object sender, EventArgs e)
+        {
+            try
+            {
+                var person = new Person(FirstName.Text, LastName.Text);
+                var shared = await _cosmosTokenClient.Read<Person>($"Person", DefaultPartitionKind.Shared);
+
+                SharedFirstName.Text = shared.FirstName;
+                SharedLastName.Text = shared.LastName;
+            }
+            catch (Exception ex)
+            {
+
             }
         }
     }

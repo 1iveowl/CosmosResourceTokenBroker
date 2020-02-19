@@ -22,7 +22,7 @@ namespace CosmosResourceTokenClient
         public async Task Create<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
-                if (defaultPartition == DefaultPartitionKind.Global)
+                if (defaultPartition == DefaultPartitionKind.Shared)
                 {
                     throw new CosmosClientException("Users has read only access to the Global partition.");
                 }
@@ -36,7 +36,7 @@ namespace CosmosResourceTokenClient
         public async Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
-                if (defaultPartition == DefaultPartitionKind.Global)
+                if (defaultPartition == DefaultPartitionKind.Shared)
                 {
                     throw new CosmosClientException("Users has read only access to the Global partition.");
                 }
@@ -54,7 +54,7 @@ namespace CosmosResourceTokenClient
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
 
-                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserRead);
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, permissionMode);
 
                 return await cosmosClientEx.Read(id, cancellationToken);
             }, PermissionModeKind.UserRead);
@@ -63,7 +63,7 @@ namespace CosmosResourceTokenClient
         public async Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
-                if (defaultPartition == DefaultPartitionKind.Global)
+                if (defaultPartition == DefaultPartitionKind.Shared)
                 {
                     throw new CosmosClientException("Users has read-only access to the Global partition.");
                 }
@@ -81,7 +81,7 @@ namespace CosmosResourceTokenClient
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
 
-                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, permissionMode);
 
                 return await cosmosClientEx.GetList(cancellationToken);
 

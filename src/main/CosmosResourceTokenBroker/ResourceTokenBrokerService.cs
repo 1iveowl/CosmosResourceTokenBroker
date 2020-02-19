@@ -17,9 +17,11 @@ namespace CosmosResourceTokenBroker
         private readonly CosmosClient _cosmosClient;
         private readonly Database _database;
         private readonly string _databaseId;
+
+        private readonly Container _container;
         private readonly string _collectionId;
         private readonly string _endpointUrl;
-        private readonly string _partitionKeyHeader;
+        private string _partitionKeyHeader;
 
         private readonly TimeSpan _resourceTokenTtl;
 
@@ -30,17 +32,17 @@ namespace CosmosResourceTokenBroker
             string key, 
             string databaseId, 
             string collectionId,
-            string partitionKeyHeader,
             TimeSpan? resourceTokenTtl = default)
         {
             _endpointUrl = endpointUrl;
             _databaseId = databaseId;
             _collectionId = collectionId;
-            _partitionKeyHeader = partitionKeyHeader;
 
             _cosmosClient = new CosmosClient(endpointUrl, key);
 
             _database = _cosmosClient.GetDatabase(databaseId);
+
+            _container = _database.GetContainer(collectionId);
 
             // Default is one hour - i.e. 3600 seconds
             if (resourceTokenTtl is null)
@@ -118,14 +120,36 @@ namespace CosmosResourceTokenBroker
             string userId,
             CancellationToken ct)
         {
+            _partitionKeyHeader = await GetPartionKeyHeader(ct);
+
             var getOrCreateUserPermissionsTask = usersWithPermisssionScope
                 .Select(tuple => GetOrCreateUserPermission(tuple.user, userId, tuple.permissionScope, ct));
 
             var permissions = await Task.WhenAll(getOrCreateUserPermissionsTask);
-
+            
             return new ResourcePermissionResponse(permissions, userId, _endpointUrl, _databaseId, _collectionId, _partitionKeyHeader);
-
         }
+
+
+        private async Task<string> GetPartionKeyHeader(CancellationToken ct)
+        {
+            try
+            {
+                var containerResponse = await _container.ReadContainerAsync(cancellationToken: ct);
+
+                if (containerResponse?.StatusCode == HttpStatusCode.OK)
+                {
+                    return containerResponse.Resource.PartitionKeyPath.Replace("/", string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ResourceTokenBrokerServiceException($"Unable acquire Partition Key Header from Cosmos container. Unhandled exception: {ex}");
+            }
+            
+            throw new ResourceTokenBrokerServiceException($"Unable acquire Partition Key Header from Cosmos container");
+        }
+
         private async Task<IResourcePermission> GetOrCreateUserPermission(
             User user, 
             string userId,
@@ -253,7 +277,7 @@ namespace CosmosResourceTokenBroker
         {
             try
             {
-                var container = _database.GetContainer(_collectionId);
+                //var container = _database.GetContainer(_collectionId);
 
                 var partitionKeyValue = userId.ToPartitionKeyBy(permissionScope.PermissionMode);
 
@@ -262,7 +286,7 @@ namespace CosmosResourceTokenBroker
                 var permissionProperties = new PermissionProperties(
                     permissionId,
                     permissionScope.PermissionMode.ToCosmosPermissionMode(),
-                    container,
+                    _container,
                     partitionKey);
 
                 var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;

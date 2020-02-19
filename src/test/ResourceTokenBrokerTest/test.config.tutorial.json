@@ -1,0 +1,10 @@
+{
+  "AccessToken": "[Insert A valid none expired access token]",
+  "ResourceTokenBrokerUrl": "[Url to Azure Function Resource Token Broker]",
+  "Scopes": [
+    "https://[Insert your name].onmicrosoft.com/[Insert your name or id]/[Insert your read scope - for example: 'user.readonly']",
+    "https://[Insert your name].onmicrosoft.com/[Insert your name or id]/Insert your read/write scope - for example: 'user.readwrite']",
+    "https://[Insert your name].onmicrosoft.com/[Insert your name or id]/Insert your read/write scope - for example: 'shared.readonly']"
+  ]
+
+}

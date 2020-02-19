@@ -5,6 +5,7 @@
 
 # ignore single file
 msalconfig.json
+test.config.json
 
 # User-specific files
 *.rsuser

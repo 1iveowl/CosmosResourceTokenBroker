@@ -24,13 +24,24 @@
         </Entry>
 
         <Entry x:Name="LastName" 
-               Placeholder="FirstName">
+               Placeholder="Shared first name">
         </Entry>
+
+        <Label x:Name="SharedFirstName" 
+               Text="Shared First name">
+        </Label>
+
+        <Label x:Name="SharedLastName" 
+               Text="Shared Last name">
+        </Label>
 
         <Button x:Name="SaveButton"
                 Text="Save"
-                Clicked="Button_Save"
-                IsEnabled="False"></Button>
+                Clicked="Button_Save"></Button>
+
+        <Button x:Name="ReadShared"
+                Text="Read shared"
+                Clicked="Button_ReadShared"></Button>
 
         <Button Text="Sign In" 
                 Clicked="Button_OnSignIn"

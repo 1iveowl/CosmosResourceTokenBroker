@@ -4,6 +4,6 @@
     public enum DefaultPartitionKind
     {
         UserDocument,
-        Global
+        Shared
     }
 }
