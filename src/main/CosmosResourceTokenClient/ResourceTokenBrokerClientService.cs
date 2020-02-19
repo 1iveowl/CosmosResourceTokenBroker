@@ -29,16 +29,18 @@ namespace CosmosResourceTokenClient
 
         internal async Task<IResourcePermissionResponse> GetResourceToken(string accessToken)
         {
-            _httpClient.DefaultRequestHeaders.Clear();
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Authorization", accessToken);
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Resource Token Broker Client"));
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-            _httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip, deflate, br"));
-            _httpClient.DefaultRequestHeaders.Connection.Add("keep-alive");
-
             try
             {
+                _httpClient.DefaultRequestHeaders.Clear();
+
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+                _httpClient.DefaultRequestHeaders.Add("User-Agent", $"ResourceTokenBroker/0.9.0");
+                _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+                _httpClient.DefaultRequestHeaders.Add("Host", $"{_resourceTokenBrokerUri.Host}");
+                _httpClient.DefaultRequestHeaders.Add("Accept-Encoding", $"gzip, deflate, br");
+                _httpClient.DefaultRequestHeaders.Add("Cache-Control", $"no-cache");
+                _httpClient.DefaultRequestHeaders.Add("Connection", $"keep-alive");
+
                 var response = await _httpClient.GetAsync(_resourceTokenBrokerUri);
 
                 if (response.IsSuccessStatusCode)
@@ -48,12 +50,15 @@ namespace CosmosResourceTokenClient
                         throw new CosmosClientException("Error acquiring resource token. Content missing is response from resource token broker.");
                     }
 
-                    var serializer = new JsonSerializer();
+                    var serializer = new JsonSerializer {TypeNameHandling = TypeNameHandling.Auto};
+
 
                     using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync());
                     using var jsonReader = new JsonTextReader(streamReader);
 
-                    return serializer.Deserialize<ResourcePermissionResponse>(jsonReader);
+                    var result = serializer.Deserialize<ResourcePermissionResponse>(jsonReader);
+
+                    return result;
                 }
             }
             catch (Exception ex)

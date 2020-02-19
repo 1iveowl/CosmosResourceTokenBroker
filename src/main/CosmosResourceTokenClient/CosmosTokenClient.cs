@@ -14,70 +14,77 @@ namespace CosmosResourceTokenClient
         public CosmosTokenClient(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
-            ICacheSingleObjectByKey<IResourcePermissionResponse> resourceTokenCache = null)
+            ICacheSingleObjectByKey<ResourcePermissionResponse> resourceTokenCache = null)
         {
             _cosmosClientHandler = new CosmosTokenClientHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
         }
 
-        public async Task Create<T>(T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken)=>
-            await _cosmosClientHandler.Execute<T>(async resourcePermissionResponse =>
+        public async Task Create<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 if (defaultPartition == DefaultPartitionKind.Global)
                 {
                     throw new CosmosClientException("Users has read only access to the Global partition.");
                 }
 
-                await using var cosmosClientEx = new CosmosClientWrapper(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
 
-                return await cosmosClientEx.Create(item, cancellationToken);
+                return await cosmosClientEx.Create(id, item, cancellationToken);
 
             }, PermissionModeKind.UserReadWrite);
-        
 
-        public async Task<T> Read<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken) =>
-            await _cosmosClientHandler.Execute<T>(async resourcePermissionResponse =>
+        public async Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
+            {
+                if (defaultPartition == DefaultPartitionKind.Global)
+                {
+                    throw new CosmosClientException("Users has read only access to the Global partition.");
+                }
+
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
+
+                return await cosmosClientEx.Replace(id, item, cancellationToken);
+
+            }, PermissionModeKind.UserReadWrite);
+
+        public async Task<T> Read<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
 
-                await using var cosmosClientEx = new CosmosClientWrapper(resourcePermissionResponse, PermissionModeKind.UserRead);
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserRead);
 
-                return await cosmosClientEx.Read<T>(id, cancellationToken);
+                return await cosmosClientEx.Read(id, cancellationToken);
             }, PermissionModeKind.UserRead);
 
-        public async Task Replace<T>(T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken) =>
-            await _cosmosClientHandler.Execute<T>(async resourcePermissionResponse =>
+
+        public async Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 if (defaultPartition == DefaultPartitionKind.Global)
                 {
-                    throw new CosmosClientException("Users has read only access to the Global partition.");
+                    throw new CosmosClientException("Users has read-only access to the Global partition.");
                 }
 
-                return await Task.FromResult(default(T));
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
+
+                await cosmosClientEx.Delete(id, cancellationToken);
+
             }, PermissionModeKind.UserReadWrite);
 
-
-        public async Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken) =>
-            await _cosmosClientHandler.Execute<T>(async resourcePermissionResponse =>
-            {
-                if (defaultPartition == DefaultPartitionKind.Global)
-                {
-                    throw new CosmosClientException("Users has read only access to the Global partition.");
-                }
-
-                return await Task.FromResult(default(T));
-            }, PermissionModeKind.UserReadWrite);
-
-        public async Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken)=>
-            await _cosmosClientHandler.Execute<T>(async resourcePermissionResponse =>
+        public async Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
 
+                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, PermissionModeKind.UserReadWrite);
 
-                return await Task.FromResult(new List<T>());
+                return await cosmosClientEx.GetList(cancellationToken);
+
             }, PermissionModeKind.UserReadWrite);
     }
 }

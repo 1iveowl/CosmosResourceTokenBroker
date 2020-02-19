@@ -6,11 +6,14 @@ using System.Reflection;
 using B2CAuthClient;
 using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
+using CosmosResourceToken.Core.Model;
+using CosmosResourceTokenClient;
 using Newtonsoft.Json.Linq;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using XamarinForms.Client.Authentication;
 using XamarinForms.Client.Authentication.Interface;
+using XamarinForms.Client.Cache;
+using XamarinForms.Client.Model;
 
 namespace XamarinForms.Client
 {
@@ -20,6 +23,9 @@ namespace XamarinForms.Client
     public partial class MainPage : ContentPage
     {
         private readonly IB2CAuthService _authService;
+        private readonly ICosmosTokenClient _cosmosTokenClient;
+
+        private IUserContext _userContext;
 
         public MainPage()
         {
@@ -41,6 +47,7 @@ namespace XamarinForms.Client
                 var tenantId = dataObject["TenantId"].ToString();
                 var clientId = dataObject["ClientId"].ToString();
                 var signUpSignInFlowName = dataObject["SignUpSignInFlowName"].ToString();
+                var resourceTokenBrokerUrl = dataObject["ResourceTokenBrokerUrl"].ToString();
 
                 var scopes = ((JArray)dataObject["Scopes"])?.Select(scope => scope?.ToString());
 
@@ -56,6 +63,10 @@ namespace XamarinForms.Client
                           || DeviceInfo.Platform == DevicePlatform.watchOS 
                           || DeviceInfo.Platform == DevicePlatform.tvOS,
                     () => DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow());
+
+                var quickAndDirtyPermissionsTokenCache = new QuickAndDirtyCache<ResourcePermissionResponse>();
+
+                _cosmosTokenClient = new CosmosTokenClient(_authService, resourceTokenBrokerUrl, quickAndDirtyPermissionsTokenCache);
             }
 
             InitializeComponent();
@@ -64,12 +75,19 @@ namespace XamarinForms.Client
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
             //var userContext = await _authService.AcquireUserContextForSpecificScope(_scopes.FirstOrDefault());
-            var userContect = await _authService.SignIn();
+            _userContext = await _authService.SignIn();
+            SaveButton.IsEnabled = true;
         }
 
         private async void Button_SignOut(object sender, EventArgs e)
         {
             await _authService.SignOut();
+        }
+
+        private void Button_Save(object sender, EventArgs e)
+        {
+            var person = new Person(FirstName.Text, LastName.Text);
+            _cosmosTokenClient.Replace(_userContext.UserIdentifier, person, DefaultPartitionKind.UserDocument);
         }
     }
 }

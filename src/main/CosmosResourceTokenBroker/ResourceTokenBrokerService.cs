@@ -19,6 +19,7 @@ namespace CosmosResourceTokenBroker
         private readonly string _databaseId;
         private readonly string _collectionId;
         private readonly string _endpointUrl;
+        private readonly string _partitionKeyHeader;
 
         private readonly TimeSpan _resourceTokenTtl;
 
@@ -29,11 +30,13 @@ namespace CosmosResourceTokenBroker
             string key, 
             string databaseId, 
             string collectionId,
+            string partitionKeyHeader,
             TimeSpan? resourceTokenTtl = default)
         {
+            _endpointUrl = endpointUrl;
             _databaseId = databaseId;
             _collectionId = collectionId;
-            _endpointUrl = endpointUrl;
+            _partitionKeyHeader = partitionKeyHeader;
 
             _cosmosClient = new CosmosClient(endpointUrl, key);
 
@@ -120,7 +123,7 @@ namespace CosmosResourceTokenBroker
 
             var permissions = await Task.WhenAll(getOrCreateUserPermissionsTask);
 
-            return new ResourcePermissionResponse(permissions, userId, _endpointUrl, _databaseId, _collectionId);
+            return new ResourcePermissionResponse(permissions, userId, _endpointUrl, _databaseId, _collectionId, _partitionKeyHeader);
 
         }
         private async Task<IResourcePermission> GetOrCreateUserPermission(

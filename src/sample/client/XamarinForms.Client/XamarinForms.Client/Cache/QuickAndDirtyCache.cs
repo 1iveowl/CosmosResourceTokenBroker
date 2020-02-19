@@ -8,7 +8,7 @@ namespace XamarinForms.Client.Cache
 {
     // This is for demo purposes. You should probably consider something like https://github.com/reactiveui/Akavache
     // or https://github.com/jamesmontemagno/monkey-cache to be used here.
-    public class QuickAndDirtyCache<T>: ICacheSingleObjectByKey<T>
+    public class QuickAndDirtyCache<T>: ICacheSingleObjectByKey<T> where T : class, new()
     {
         private readonly IDictionary<string, (T cacheObj, DateTime expires)> _cacheDictionary;
 
@@ -18,7 +18,7 @@ namespace XamarinForms.Client.Cache
             _cacheDictionary = new ConcurrentDictionary<string, (T obj, DateTime expires)>();
         }
 
-        public async Task<(CacheObjectStateKind cacheState, T obj)> TryGetFromCache(string key)
+        public async Task<(CacheObjectStateKind cacheState, T obj)> TryGetFromCache(string key) 
         {
             if (_cacheDictionary.TryGetValue(key, out var cacheObj))
             {

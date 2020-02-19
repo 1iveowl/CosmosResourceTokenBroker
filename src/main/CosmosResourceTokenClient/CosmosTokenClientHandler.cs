@@ -8,21 +8,31 @@ using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceTokenClient
 {
+    [Preserve(AllMembers = true)]
     internal class CosmosTokenClientHandler
     {
         private readonly IB2CAuthService _authService;
         private readonly ResourceTokenBrokerClientService _brokerClient;
-        private readonly ICacheSingleObjectByKey<IResourcePermissionResponse> _resourceTokenCache;
+        private readonly ICacheSingleObjectByKey<ResourcePermissionResponse> _resourceTokenCache;
 
         internal CosmosTokenClientHandler(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
-            ICacheSingleObjectByKey<IResourcePermissionResponse> resourceTokenCache = null)
+            ICacheSingleObjectByKey<ResourcePermissionResponse> resourceTokenCache = null)
         {
             _authService = authService ?? throw new NoNullAllowedException("B2C Authentication Service construction parameter cannot be null");
 
             _brokerClient = new ResourceTokenBrokerClientService(resourceTokenBrokerUrl);
             _resourceTokenCache = resourceTokenCache;
+        }
+
+        internal async Task Execute(Func<IResourcePermissionResponse, Task> cosmosfunc, PermissionModeKind permissionMode)
+        {
+            await Execute(async resourcePermissionResponse =>
+            {
+                await cosmosfunc(resourcePermissionResponse);
+                return true;
+            }, permissionMode);
         }
 
         internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosfunc, PermissionModeKind permissionMode)
@@ -65,6 +75,7 @@ namespace CosmosResourceTokenClient
 
         private async Task<IResourcePermissionResponse> AcquireResourceToken(IUserContext userContext)
         {
+            
             if (_resourceTokenCache is null)
             {
                 return await _brokerClient.GetResourceToken(userContext.AccessToken);
@@ -79,7 +90,7 @@ namespace CosmosResourceTokenClient
 
             if (cacheState != CacheObjectStateKind.Ok)
             {
-                resourcePermissions = await _brokerClient.GetResourceToken(userContext.AccessToken);
+                resourcePermissions = (ResourcePermissionResponse)await _brokerClient.GetResourceToken(userContext.AccessToken);
 
                 var expires = resourcePermissions?.ResourcePermissions?
                     .OrderBy(resourcePermission => resourcePermission.ExpiresUtc)
@@ -98,7 +109,7 @@ namespace CosmosResourceTokenClient
 
         private async Task ValidateLoginState()
         {
-            if (_authService.CurrentUserContext is null || !_authService.CurrentUserContext.IsLoggedOn || !_authService.CurrentUserContext.HasAccessTokenExpired)
+            if (_authService.CurrentUserContext is null || !_authService.CurrentUserContext.IsLoggedOn || _authService.CurrentUserContext.HasAccessTokenExpired)
             {
                 // If not logged on then try silently to acquire user context.
                 try

@@ -11,6 +11,7 @@ namespace CosmosResourceToken.Core.Model
         string EndpointUrl { get; }
         string DatabaseId { get; }
         string CollectionId { get; }
+        string PartitionKeyHeader { get; }
 
     }
 }

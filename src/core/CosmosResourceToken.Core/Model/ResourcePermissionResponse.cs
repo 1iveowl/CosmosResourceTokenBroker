@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using CosmosResourceToken.Core.Serializer;
 using Newtonsoft.Json;
 
 namespace CosmosResourceToken.Core.Model
@@ -9,6 +9,7 @@ namespace CosmosResourceToken.Core.Model
     {
 
         [JsonProperty(PropertyName = "permission")]
+        //[JsonConverter(typeof(ConcreteTypeConverter<List<ResourcePermission>>))]
         public IEnumerable<IResourcePermission> ResourcePermissions { get; set; }
 
         [JsonProperty(PropertyName = "userId")]
@@ -18,10 +19,13 @@ namespace CosmosResourceToken.Core.Model
         public string EndpointUrl { get; set; }
 
         [JsonProperty(PropertyName = "databaseId")]
-        public string DatabaseId { get; }
+        public string DatabaseId { get; set; }
 
         [JsonProperty(PropertyName = "collectionId")]
-        public string CollectionId { get; }
+        public string CollectionId { get; set; }
+
+        [JsonProperty(PropertyName = "partitionKeyHeader")]
+        public string PartitionKeyHeader { get; set; }
 
         public ResourcePermissionResponse() { }
 
@@ -30,7 +34,8 @@ namespace CosmosResourceToken.Core.Model
             string userId,
             string endpointUrl, 
             string databaseId,
-            string collectionId)
+            string collectionId,
+            string partitionKeyHeader)
         {
             ResourcePermissions = permissions;
  
@@ -38,6 +43,7 @@ namespace CosmosResourceToken.Core.Model
             EndpointUrl = endpointUrl;
             DatabaseId = databaseId;
             CollectionId = collectionId;
+            PartitionKeyHeader = partitionKeyHeader;
         }
     }
 }

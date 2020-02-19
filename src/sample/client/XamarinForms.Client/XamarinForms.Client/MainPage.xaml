@@ -8,10 +8,29 @@
 
     <StackLayout Margin="8,24,8,24">
 
-        <Label Text="Cosmos/MSAL Resource Token Broker Sample Client" 
+        <Label Text="Cosmos/MSAL Resource Token Broker Sample Client." 
                VerticalOptions="Start" 
                HorizontalTextAlignment="Center"
                HorizontalOptions="FillAndExpand" />
+
+        <Label Text="Log in to enable Cosmos access." 
+               VerticalOptions="Start" 
+               Margin="0,12,0,12"
+               HorizontalTextAlignment="Center"
+               HorizontalOptions="FillAndExpand" />
+
+        <Entry x:Name="FirstName" 
+               Placeholder="FirstName">
+        </Entry>
+
+        <Entry x:Name="LastName" 
+               Placeholder="FirstName">
+        </Entry>
+
+        <Button x:Name="SaveButton"
+                Text="Save"
+                Clicked="Button_Save"
+                IsEnabled="False"></Button>
 
         <Button Text="Sign In" 
                 Clicked="Button_OnSignIn"
