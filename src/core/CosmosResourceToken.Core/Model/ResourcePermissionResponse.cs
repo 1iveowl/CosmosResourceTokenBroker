@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using CosmosResourceToken.Core.Serializer;
 using Newtonsoft.Json;
 
 namespace CosmosResourceToken.Core.Model
@@ -9,7 +8,6 @@ namespace CosmosResourceToken.Core.Model
     {
 
         [JsonProperty(PropertyName = "permission")]
-        //[JsonConverter(typeof(ConcreteTypeConverter<List<ResourcePermission>>))]
         public IEnumerable<IResourcePermission> ResourcePermissions { get; set; }
 
         [JsonProperty(PropertyName = "userId")]

@@ -86,8 +86,15 @@ namespace XamarinForms.Client
 
         private void Button_Save(object sender, EventArgs e)
         {
-            var person = new Person(FirstName.Text, LastName.Text);
-            _cosmosTokenClient.Replace(_userContext.UserIdentifier, person, DefaultPartitionKind.UserDocument);
+            try
+            {
+                var person = new Person(FirstName.Text, LastName.Text);
+                _cosmosTokenClient.Replace($"Person-{_userContext.UserIdentifier}", person, DefaultPartitionKind.UserDocument);
+            }
+            catch (Exception ex)
+            {
+                
+            }
         }
     }
 }

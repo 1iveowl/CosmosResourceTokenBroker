@@ -2,7 +2,6 @@
 using System.Data;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceToken.Core.Model;

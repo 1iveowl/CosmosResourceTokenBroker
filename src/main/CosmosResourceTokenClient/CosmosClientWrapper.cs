@@ -56,7 +56,7 @@ namespace CosmosResourceTokenClient
 
                 var itemResponse = await _container.CreateItemAsync(cosmosItem, _partitionKey, cancellationToken: ct);
 
-                if (itemResponse.StatusCode == HttpStatusCode.OK)
+                if (itemResponse.StatusCode == HttpStatusCode.Created)
                 {
                     return itemResponse.Resource.Document;
                 }
@@ -87,7 +87,7 @@ namespace CosmosResourceTokenClient
 
                 var itemResponse = await _container.UpsertItemAsync(cosmosItem, _partitionKey, cancellationToken: ct);
 
-                if (itemResponse.StatusCode == HttpStatusCode.OK)
+                if (itemResponse.StatusCode == HttpStatusCode.Created || itemResponse.StatusCode == HttpStatusCode.OK)
                 {
                     return itemResponse.Resource.Document;
                 }

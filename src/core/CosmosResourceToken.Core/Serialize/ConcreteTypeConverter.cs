@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 
-namespace CosmosResourceToken.Core.Serializer
+namespace CosmosResourceToken.Core.Serialize
 {
-    // https://stackoverflow.com/a/12202914/4140832
+    // 
     public class ConcreteTypeConverter<TConcrete> : JsonConverter
     {
         public override bool CanConvert(Type objectType)

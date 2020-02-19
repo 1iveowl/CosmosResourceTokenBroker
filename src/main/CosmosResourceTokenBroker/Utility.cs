@@ -1,7 +1,9 @@
 ﻿using System;
-
+using System.Linq;
+using CosmosResourceToken.Core.Broker;
 using CosmosResourceToken.Core.Model;
 using Microsoft.Azure.Cosmos;
+using Newtonsoft.Json.Linq;
 using static CosmosResourceToken.Core.Model.Constants;
 
 namespace CosmosResourceTokenBroker
@@ -31,5 +33,29 @@ namespace CosmosResourceTokenBroker
             _ => throw new ArgumentOutOfRangeException(nameof(permissionMode), permissionMode,
                 "Unknown permission mode")
         };
+
+        internal static string ToPartitionKeyString(this PartitionKey? partitionKey)
+        {
+            var partitionKeyJson = partitionKey.GetValueOrDefault().ToString();
+
+            string partitionKeyValue;
+
+            try
+            {
+                partitionKeyValue = JArray.Parse(partitionKeyJson)?.FirstOrDefault()?.Value<string>();
+
+                if (string.IsNullOrEmpty(partitionKeyValue))
+                {
+                    throw new ArgumentNullException(partitionKeyValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ResourceTokenBrokerServiceException($"Unable to parse partition key . Unhandled exception: {ex}");
+            }
+
+            return partitionKeyValue;
+
+        }
     }
 }

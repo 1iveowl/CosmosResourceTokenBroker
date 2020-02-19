@@ -7,7 +7,7 @@ namespace CosmosResourceToken.Core.Model
     public class ResourcePermission : IResourcePermission
     {
         [JsonProperty(PropertyName = "permissionMode")]
-        public PermissionModeKind PermissionMode { get; }
+        public PermissionModeKind PermissionMode { get; set; }
 
         [JsonProperty(PropertyName = "scope")]
         public string Scope { get; set; }
@@ -22,7 +22,7 @@ namespace CosmosResourceToken.Core.Model
         public DateTime ExpiresUtc { get; set; }
 
         [JsonProperty(PropertyName = "partitionKey")]
-        public string PartitionKey { get; }
+        public string PartitionKey { get; set; }
 
         public ResourcePermission() { }
 
