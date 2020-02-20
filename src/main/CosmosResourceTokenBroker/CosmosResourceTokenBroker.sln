@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "B2CAuthClient", "..\B2CAuth
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "B2CAuthClient.Abstract", "..\..\core\B2CAuthClient.Abstract\B2CAuthClient.Abstract.csproj", "{DEE6641C-3039-4142-9E77-3CE58B2BADDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceTokenBrokerTest", "..\..\test\ResourceTokenBrokerTest\ResourceTokenBrokerTest.csproj", "{3AB28583-59E1-4796-A6EE-5F733D8EBA0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceTokenBrokerTest", "..\..\test\ResourceTokenBrokerTest\ResourceTokenBrokerTest.csproj", "{3AB28583-59E1-4796-A6EE-5F733D8EBA0E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{D0E55FB2-922E-4CDF-B5F1-77D02A238CA6}"
 EndProject

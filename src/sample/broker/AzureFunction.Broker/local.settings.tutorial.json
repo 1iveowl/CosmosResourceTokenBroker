@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+
+    "CosmosUrl": "https://[My cosmos db name].documents.azure.com:443/",
+    "CosmosPrimaryKey": "[Secret primary key...]",
+    "CosmosCollectionId": "[Collection name]",
+    "CosmosDatabaseId": "[Database name]"
+  }
+}
