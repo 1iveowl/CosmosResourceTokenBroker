@@ -7,7 +7,7 @@ namespace CosmosResourceToken.Core.Model
     public class ResourcePermissionResponse : IResourcePermissionResponse
     {
 
-        [JsonProperty(PropertyName = "permission")]
+        [JsonProperty(PropertyName = "resourcePermissions")]
         public IEnumerable<IResourcePermission> ResourcePermissions { get; set; }
 
         [JsonProperty(PropertyName = "userId")]

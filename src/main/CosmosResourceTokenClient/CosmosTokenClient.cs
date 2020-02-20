@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using B2CAuthClient.Abstract;
@@ -7,7 +8,7 @@ using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceTokenClient
 {
-    public class CosmosTokenClient : ICosmosTokenClient
+    public class CosmosTokenClient : ICosmosTokenClient, IAsyncDisposable
     {
         private readonly CosmosTokenClientHandler _cosmosClientHandler;
 
@@ -86,5 +87,10 @@ namespace CosmosResourceTokenClient
                 return await cosmosClientEx.GetList(cancellationToken);
 
             }, PermissionModeKind.UserReadWrite);
+
+        public async ValueTask DisposeAsync()
+        {
+            await _cosmosClientHandler.DisposeAsync();
+        }
     }
 }

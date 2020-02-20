@@ -128,7 +128,7 @@ namespace CosmosResourceTokenClient
             {
                 var itemResponse = await _container.DeleteItemAsync<CosmosItem<T>>(id, _partitionKey, cancellationToken: ct);
 
-                if (itemResponse.StatusCode == HttpStatusCode.OK)
+                if (itemResponse.StatusCode == HttpStatusCode.NoContent)
                 {
                     return;
                 }
@@ -149,8 +149,16 @@ namespace CosmosResourceTokenClient
         {
             try
             {
-                var setIterator = _container.GetItemLinqQueryable<CosmosItem<T>>(true)
-                    .Where(i => i.PartitionKeyHeaderNameForCosmosItem == _partitionKeyStr)
+                var queryRequestOption = new QueryRequestOptions
+                {
+                    PartitionKey = new PartitionKey(_partitionKeyStr)
+                };
+
+                //var setIterator2 = _container.GetItemLinqQueryable<CosmosItem<T>>(true, )
+
+                var setIterator = _container
+                    .GetItemLinqQueryable<CosmosItem<T>>(true, requestOptions: queryRequestOption)
+                    //.Where(i => i.PartitionKeyHeaderNameForCosmosItem == _partitionKeyStr)
                     .ToFeedIterator();
 
                 var itemList = new List<T>();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
@@ -9,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace CosmosResourceTokenClient
 {
-    internal class ResourceTokenBrokerClientService
+    internal class ResourceTokenBrokerClientService : IAsyncDisposable 
     {
         private readonly HttpClient _httpClient;
         private readonly Uri _resourceTokenBrokerUri;
@@ -23,7 +24,12 @@ namespace CosmosResourceTokenClient
             
             _resourceTokenBrokerUri = new Uri(resourceTokenBrokerUrl);
 
-            _httpClient = new HttpClient();
+            var handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+
+            _httpClient = new HttpClient(handler);
         }
 
         internal async Task<IResourcePermissionResponse> GetResourceToken(string accessToken)
@@ -49,11 +55,15 @@ namespace CosmosResourceTokenClient
                         throw new CosmosClientException("Error acquiring resource token. Content missing is response from resource token broker.");
                     }
 
+                    //var test = await response.Content.ReadAsStringAsync();
+
                     var serializer = new JsonSerializer {TypeNameHandling = TypeNameHandling.Auto};
 
 
                     using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync());
                     using var jsonReader = new JsonTextReader(streamReader);
+
+                    
 
                     var result = serializer.Deserialize<ResourcePermissionResponse>(jsonReader);
 
@@ -66,6 +76,12 @@ namespace CosmosResourceTokenClient
             }
 
             throw new CosmosClientException("Error acquiring resource token.");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _httpClient?.Dispose();
+            await Task.CompletedTask;
         }
     }
 }

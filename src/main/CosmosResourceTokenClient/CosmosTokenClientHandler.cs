@@ -9,7 +9,7 @@ using CosmosResourceToken.Core.Model;
 namespace CosmosResourceTokenClient
 {
     [Preserve(AllMembers = true)]
-    internal class CosmosTokenClientHandler
+    internal class CosmosTokenClientHandler : IAsyncDisposable
     {
         private readonly IB2CAuthService _authService;
         private readonly ResourceTokenBrokerClientService _brokerClient;
@@ -128,6 +128,11 @@ namespace CosmosResourceTokenClient
                                                                   "Try to login in interactively before continuing.", ex);
                 }
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _brokerClient.DisposeAsync();
         }
     }
 }

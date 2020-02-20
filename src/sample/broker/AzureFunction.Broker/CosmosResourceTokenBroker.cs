@@ -76,9 +76,32 @@ namespace AzureFunction.Broker
                 return LogErrorAndCreateBadObjectResult($"Unable to read JWT token: {accessToken}", log, ex);
             }
 
+#if DEBUG
+            var expires = token.ValidTo;
+
+            var ignoreExpires = req?.Headers?["IgnoreExpires"].ToString() == "true";
+
+            if (DateTime.UtcNow > expires && !ignoreExpires)
+            {
+                return LogErrorAndCreateBadObjectResult("The access token have expired. " +
+                                                        "Note this error is for debug mode only, for use when testing. " +
+                                                        "In production access token validity is handled by Azure Functions configuration.", log);
+            }
+#endif
+
+//#if DEBUG
+            
+//            var isUserIdOverride = req?.Headers?["UserIdOverride"].ToString() == "true";
+//            var replaceUserId = req?.Headers?["ReplaceUserId"].ToString();
+
+//            var userObjectId = isUserIdOverride ? replaceUserId : token?.Subject;
+//#else
+//            var userObjectId = token?.Subject;
+//#endif
+
             // Getting the user object id from the Access Token
             var userObjectId = token?.Subject;
-            
+
             if (string.IsNullOrEmpty(userObjectId))
             {
                 return LogErrorAndCreateBadObjectResult("No subject defined in access token", log);
