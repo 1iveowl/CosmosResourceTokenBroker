@@ -60,20 +60,21 @@ If you are ***not*** migrating from AppCenter Auth and AppCenter Data then you'l
 If you are migrating an existing mobile app off of AppCenter Auth and AppCenter Data, then you already have a B2C Active Directory Tenant running with existing users. You also already have a Cosmos DB with existing data. 
 
 The steps you need to take to migrate are:
-1. Create a Resource Token Broker and configure it so that it integrates seamlessly with your B2C Active Directory and your Cosmos DB. For that, this repository offers the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker).
-2. Program your app to use MSAL for authentication. For that, this repository offers the [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
-3. Program your app to read and write data to Cosmos DB utilizing the Resource Token Broker to facilitate secure access. For that, this repository offers the [Cosmos Resource Token Client library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
-4. *[optional]* You might also want to consider some form of client side caching of the data/Cosmos documents, to support off-line scenarios, to speed things up and to make your app less chatty on the internet. It all depends on the type of app. AppCenter Data did offers some of this caching, primiary for the off-line scenarios. No such caching is offered here, but it might be worth taking a look at [Akavache](https://github.com/reactiveui/Akavache).
 
-If your are not migrating from AppCenter Auth and Data but are starting afresh with Azure AD B2C and Azure Cosmos DB you basically need to go through the same steps.
+1. Create a Resource Token Broker and configure it so that operates seamlessly with your B2C Active Directory and your Cosmos DB. This repository offers the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker).
+2. Program your app to use MSAL for authentication. This repository offers the [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
+3. Program your app to read and write data to Cosmos DB utilizing the Resource Token Broker to facilitate secure access. This repository offers the [Cosmos Resource Token Client library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
+4. *[optional]* You might also want to consider implementing client/app side caching of the data/Cosmos documents, to support off-line scenarios, speed things up and to make your app less chatty on the internet. It all depends on the type of app of cause. AppCenter Data did offers some of this caching, primarily for the off-line scenarios. However, no such caching is offered here, but it might be worth taking a look at [Akavache](https://github.com/reactiveui/Akavache).
+
+If your are not migrating from AppCenter Auth and Data, i.e. starting afresh with Azure AD B2C and Azure Cosmos DB, you basically need to go through the same steps.
 
 #### Step 1: Implementing The Resource Token Broker
 
-The first thing you should do is to create an HTTP Triggered Azure Function that will work as your Resource Token Broker. 
+The first thing you should do, is to create a HTTP Triggered Azure Function that will serve as your Resource Token Broker. 
 
 *Note: You can also run your Resource Token Broker as an ASP.NET Core app, running in an App Service. The Resource Token Broker Service library here can easy accommodate such a scenario, however setting this up and configuring this is outside the scope of this guide, although the essential steps should not be that much different.*
 
-The ingredients for getting the Resource Token Broker ready as an Azure Function are included this repository and include:
+The ingredients for getting the Resource Token Broker ready, running as an Azure Function, are included in this repository:
 
 1.  The code for the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker).
 2.  The [Azure Function sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker) which shows you how to configure and use the Resource Token Broker Service.
