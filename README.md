@@ -61,31 +61,31 @@ If you are migrating an existing mobile app off of AppCenter Auth and AppCenter 
 
 The steps you need to take to migrate are:
 
-1. Create a Resource Token Broker and configure it so that operates seamlessly with your B2C Active Directory and your Cosmos DB. This repository offers the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker).
-2. Program your app to use MSAL for authentication. This repository offers the [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
-3. Program your app to read and write data to Cosmos DB utilizing the Resource Token Broker to facilitate secure access. This repository offers the [Cosmos Resource Token Client library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
-4. *[optional]* You might also want to consider implementing client/app side caching of the data/Cosmos documents, to support off-line scenarios, speed things up and to make your app less chatty on the internet. It all depends on the type of app of cause. AppCenter Data did offers some of this caching, primarily for the off-line scenarios. However, no such caching is offered here, but it might be worth taking a look at [Akavache](https://github.com/reactiveui/Akavache).
+1. Configure the Azure AD B2C Tenant. Specifically, three API's/scopes must be created and exposed and added to the API Permission.
+2. Implement a Resource Token Broker and configure it so that it operates seamlessly with your Azure AD B2C and your Cosmos DB. This repository offers the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker).
+3. Program your app to use MSAL for authentication. This repository offers the [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
+4. Program your app to store data with Cosmos DB. This repository offers the [Cosmos Resource Token Client library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
+5. *[optional]* You might also want to consider implementing client/app side caching of the data/Cosmos documents, to support off-line scenarios, speed things up and to make your app less chatty on the internet. It all depends on the type of app of cause. AppCenter Data did offers some of this caching, primarily for the off-line scenarios. However, no such caching is offered here, but it might be worth taking a look at [Akavache](https://github.com/reactiveui/Akavache).
 
-If your are not migrating from AppCenter Auth and Data, i.e. starting afresh with Azure AD B2C and Azure Cosmos DB, you basically need to go through the same steps.
+If your are not migrating from AppCenter Auth and Data, bur rather starting afresh with Azure AD B2C and Azure Cosmos DB, you basically need to go through these same steps.
 
-#### Step 1: Implementing The Resource Token Broker
+#### Step 1: Configuring the Azure AD B2C Tenant
+... insert guiding steps ...
 
-The first thing you should do, is to create a HTTP Triggered Azure Function that will serve as your Resource Token Broker. 
+#### Step 2: Implementing The Resource Token Broker
 
-*Note: You can also run your Resource Token Broker as an ASP.NET Core app, running in an App Service. The Resource Token Broker Service library here can easy accommodate such a scenario, however setting this up and configuring this is outside the scope of this guide, although the essential steps should not be that much different.*
+The second step is to create a HTTP Triggered Azure Function that will serve as the Resource Token Broker, which will be providing tokens to users to facilitate secure access to only those documents in the Cosmos DB that are either either affiliated to the specific user or are shared among all users. 
 
-The ingredients for getting the Resource Token Broker ready, running as an Azure Function, are included in this repository:
+Specifically, the Resource Token Broker grantes the user a set of tokens that give read-write permission to documents which are stored with a Partition Keys called `user-[Unique User Id]`, where the unique id of the user is provided by Azure AD B2C, as well as read-only access to documents stores with the partition key `shared`.
 
-1.  The code for the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker).
-2.  The [Azure Function sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker) which shows you how to configure and use the Resource Token Broker Service.
+    Note: You can also run your Resource Token Broker as an ASP.NET Core app, running in an App Service. The Resource Token Broker Service library here can easy accommodate such a scenario too, however how to set this up is outside the scope of this guide, although the essential steps should not be that much different.
 
-With this you are ready to create your own Azure Function based Resource Token Broker. 
+- This is the code for the [Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenBroker).
+- This is a sample that shows how to use the Resource Token Broker library: [Azure Function sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction.Broker) which shows you how to configure and use the Resource Token Broker Service.
 
-When you've published your Azure Function and configured it as outlined in the just mentioned [guide](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L23) then you'll need to configure the Resource Broker Service. 
+In the sample, the settings needed to configure the Resource Token Broker is defined as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
 
-In the sample, configuration is defined as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
-
-When running your Azure Function in your emulator on your local developer machine those settings are read from the file 'local.settings.json' in your project. This file should look something like this: 
+When running your Azure Function in your emulator on your local developer machine those settings are read from the file `local.settings.json` in your project. This file will look something like this: 
 
 ```json
 {
@@ -102,14 +102,17 @@ When running your Azure Function in your emulator on your local developer machin
 }
 ```
 
-Please note, that this file will not look like this when you first open the Azure Function sample in this repository. Specifically, all the settings that relate to Cosmos missing. This is because 'local.settings.json' is excluded per default by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. See the included file `local.settings.tutorial.json` as a starting point.
+Please note, that this file will not look like this when you first open the Azure Function sample in this repository. Specifically, all the settings that relate to Cosmos will be missing. This is because 'local.settings.json' is excluded per default by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. The file `local.settings.tutorial.json` is included to provide an example. You need to rename it to `local.settings.json` if you want to use it.
 
-When you publish your Azure Function into production, you must configure the same settings your are spedifying in `local.settings.json`. You do so by utilizing [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets in the [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/)
+When you publish your Azure Function into production, you must configure the same settings that you've are spedifying in `local.settings.json` by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
 
-Here's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
+You will also need to integrate Azure Functions with Azure AD B2C. This way Azure Functions will auto-magically take care of the authentication of the user for you. There's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C here: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
-With these steps behind us, you should have a Resource Token Broker running nicely in Azure Functions, and which requires AD authentication of any user accessing it. You can test that your Azure AD B2C configuration is successful by copying the URL of your Azure Function into a browser running in Incognito/InPrivate Browsing mode, and see that you will now be asked to log-in using your favorite social account (according to the configuration of your Azure AD B2C sign-in User Flow flow). 
+You should now have a Resource Token Broker running nicely as an Azure Function. Any access to the Azure Function will now requires AD authentication - i.e. that a JWT Access Token is presented when accessing the Azure Function.
 
-This is just a test, of course. Going forward the user will not, and should not, be presented with such log-in requirements everytime the broker is needed in the app, rather you will be configuring the app to handle user log-in once, using MSAL, and then utilize an Access Token for the different scopes (read and read-write) to authenticate the user to the Azure Function.
+You can test that your Azure Function/Azure AD B2C integration is successfully configure by copying the URL of your Azure Function into a browser which is running in Incognito/InPrivate Browsing mode. If the integration works as it should, you will now be asked to log-in, according to the configuration of your Azure AD B2C sign-in User Flow, before getting to the Azure Function. This is just a test of course. Going forward the user will not, and should not, be prompted to log-in everytime the broker is needed, rather you will be configuring your app to handle user log-in using MSAL, and then utilize the Access Token acquired with MSAL when requesting Resource Tokens from the Resource Token Broker.
 
-#### Using MSAL With The App
+#### Step 3: Program your app to use MSAL for authentication
+
+
+#### Step 4: Program your app to store data with Cosmos DB
