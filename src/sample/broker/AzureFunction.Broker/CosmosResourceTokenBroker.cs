@@ -25,7 +25,7 @@ namespace AzureFunction.Broker
         {
             // loading configuration variables.
             _cosmosHostUrl = Environment.GetEnvironmentVariable("CosmosUrl");
-            _cosmosKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
+            _cosmosKey = Environment.GetEnvironmentVariable("CosmosKey");
             _cosmosDatabaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
             _cosmosCollectionId = Environment.GetEnvironmentVariable("CosmosCollectionId");
             //_partitionKeyHeader = Environment.GetEnvironmentVariable("CosmosPartitionKeyHeader");
@@ -88,16 +88,6 @@ namespace AzureFunction.Broker
                                                         "In production access token validity is handled by Azure Functions configuration.", log);
             }
 #endif
-
-//#if DEBUG
-            
-//            var isUserIdOverride = req?.Headers?["UserIdOverride"].ToString() == "true";
-//            var replaceUserId = req?.Headers?["ReplaceUserId"].ToString();
-
-//            var userObjectId = isUserIdOverride ? replaceUserId : token?.Subject;
-//#else
-//            var userObjectId = token?.Subject;
-//#endif
 
             // Getting the user object id from the Access Token
             var userObjectId = token?.Subject;
