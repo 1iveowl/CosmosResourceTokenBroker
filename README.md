@@ -18,7 +18,7 @@ Anyhow, there's certainly good to be said about red pills too. Hence, I decided 
 - [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview).
 
 
-I've always enjoyed learning new stuff, and as I dove in, I found that migration effort at hand was indeed kind enough to offer even more learning opportunities than first anticipated😉. So, as I was struggeling along, I decided that I might be able to help others (and frankly myself too), if I'd document my learning and code as I progressed. 
+I've always enjoyed learning new stuff, and as I dove in, I found that migration effort at hand was indeed kind enough to offer even more learning opportunities than first anticipated. So, as I was struggeling along, I decided that I might be able to help others (and frankly myself too), if I'd document my learning and code as I progressed. 
 
 I share this code and learning here in the hope that others might find it helpful and useful in their own learning/migration journey too. Also, this repository is not only for the migration scenario. I believe that what is shared here, is likely to be relevant too for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB - i.e. without ever having used AppCenter Auth or AppCenter Data before.
 
@@ -67,7 +67,7 @@ If you are migrating an existing mobile away from AppCenter Auth and AppCenter D
 
 ## The steps:
 
-There are the steps needed no matter if migration away from AppCenter Auth and AppCenter Data or not:
+These are the overall steps needed, no matter if migration away from AppCenter Auth and AppCenter Data or starting out from a clean slate with a new app:
 
 1. Configure the Azure AD B2C Tenant. Specifically, three API's/scopes must be created and exposed and added with API Permissions. Details for how to do this is outlined below.
 2. Implement a Resource Token Broker and configure it so that it operates seamlessly togehter with your Azure AD B2C and your Cosmos DB.
@@ -76,27 +76,27 @@ There are the steps needed no matter if migration away from AppCenter Auth and A
 5. *(Optional)* You might also want to consider implementing client/app side caching of the data/Cosmos documents.
 
 ## Step 1: Configuring the Azure AD B2C Tenant
-The Resource Token Broker basically works by mapping [OAuth 2.0 scopes](https://docs.microsoft.com/en-us/azure/active-directory-b2c/authorization-code-flow) to a set of *Cosmos DB users* and then assigning Permissions to each of those *Cosmos DB Users*. A permissions is furthermore mapped between each *Cosmos DB User* and a specific *Cosmos DB Partition Key*. 
+The Resource Token Broker presented here basically works by mapping [OAuth 2.0 scopes](https://docs.microsoft.com/en-us/azure/active-directory-b2c/authorization-code-flow) to a set of *Cosmos DB users* and then assigning Permissions to each of those *Cosmos DB Users*. A permission is furthermore mapped between a specific *Cosmos DB User* and a  *Cosmos DB Partition Key*. 
 
-Please note, that the *Cosmos DB user* is a different entity from the *Azure AD B2C User*. The *Cosmos DB Users* are created dynamically by the broker, the first time an *Azure AD B2C User* requests a Resource Token. Each *Azure AD B2C User* will be mapped to these *Cosmos DB users* by the broker. Specfically, an *Azure AD B2C* user will upon request receive three Resource Tokens from the broker, with each Resource Token represeting a unique *Cosmos DB User*, which again map to a unique permission - i.e:
+Please note, that the *Cosmos DB user* is a different entity from the *Azure AD B2C User*. The multiple *Cosmos DB Users* are created dynamically by the broker, the first time an *Azure AD B2C User* requests a set of *Resource Tokens*. Specfically, an *Azure AD B2C* user will upon request receive three Resource Tokens from the broker, with each Resource Token represeting a unique *Cosmos DB User*, which again map to a unique permission tied to a *Cosmos Partition Key*. The three users are:
 
-1. A Cosmos DB User with **read-only** permission to a specific Partition Key for the specific Azure AD B2C users. The Partition Key look like this: `user-037af674-890b-4f86-a3ef-90e69d585311`
-2. A Cosmos DB User with **read and write** permission to a specific Partition Key for the specific Azure AD B2C users. The Partition Key look like this: `user-037af674-890b-4f86-a3ef-90e69d585311`
+1. A Cosmos DB User with **read-only** permission to a Partition Key tied to a specific Azure AD B2C users. The Partition Key look like this: `user-037af674-890b-4f86-a3ef-90e69d585311`
+2. A Cosmos DB User with **read and write** permission to a Partition Key tied to a specific Azure AD B2C users. The Partition Key look like this: `user-037af674-890b-4f86-a3ef-90e69d585311`
 3. A Cosmos DB User with **read-only** permission to documents shared among all users: The Partition key will look like this: `shared`
 
-The Guid part of the Partition Keys (`user-037af674-890b-4f86-a3ef-90e69d585311`) is the unique and immutable user object id for a user provided by Azure AD B2C.
+The Guid part of the Partition Keys (e.g. `037af674-890b-4f86-a3ef-90e69d585311`) is identical to the unique and immutable user object id for a user in Azure AD B2C.
 
-To configure Azure AD B2C to accommodate this setup we will need to create three scopes to represent:
+To configure Azure AD B2C to accommodate the above we will need to create three scopes in Azure AD B2C. These represent:
 - User documents: read-only
 - User documents: read and write
 - Share documents: read-only
 
-To do this:
-1. navigate to the Azure AD B2C and the **App Registraion (preview)** menu. 
+To configure this:
+1. Navigate to the Azure AD B2C and choose the **App Registraion (preview)** menu. 
 2. Open your Application.
 3. Choose **Expose an API**.
-4. (optional) You can change the App ID URI by pressing **edit**.
-5. USe the **Add a scope** button to create three scopes with these names:
+4. (optional) You can change the App ID URI by pressing **edit** at the top of the page.
+5. Use the **Add a scope** button to create three scopes with exactly these names:
    1.  `user.readonly`
    3.  `user.readwrite`
    4.  `shared.readonly`
@@ -104,7 +104,7 @@ To do this:
 7. Click **Add a permission**,
 8. Pick **My APIs.** and stay within **Delegated Permissions**
 9. Click on the name of your application
-10. Check the three new Permission you just created. You might need to expand the them to click all the check boxes.
+10. Check the chack boxes of the three Permission you've just created. You might need to expand the them to click all the check boxes.
 
 That's it. Azure AD B2C is now configured.
 
@@ -116,25 +116,23 @@ Used with this step:
 - [The Azure Function sample based on the Resource Token Broker Service library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction).
 
 
-    *Note: The Resource Token Broker can also be run as an ASP.NET Core app, running in an App Service or a container etc. The Resource Token Broker Service library here can easy accommodate such scenarios too, however the details for setting this up is outside the scope of this guide, although the essential steps should not be that much different.*
+    *Note: The Resource Token Broker can also be run as an ASP.NET Core app, running in an App Service or a container etc. The Resource Token Broker Service library here can easy accommodate such scenarios too. However, the details for setting this up is outside the scope of this guide, although the essential steps should not be that much different.*
 
 To implement the Resource Token Broker we need to:
 
-1. Create the HTTP Triggered Azure Function
+1. Create a HTTP Triggered Azure Function.
 2. Configure the Azure Function for integration with Azure AD B2C.
 3. Testing integration between Azure Function and Azure AD B2C
 
 ### Resource Token Broker - Azure Function
 
-The Resource Token Broker can be implemented as a HTTP Triggered Azure Function. The broker receivces resource token requests from authenticated users to which it hands out tokens providing permissions to only those documents in the Cosmos DB that are owned by the specific user (read/write) or are shared among all users (read-only).
+The Resource Token Broker can be implemented as a HTTP Triggered Azure Function. The broker receives resource token requests from authenticated users and hands out tokens which provide permissions to only those documents in the Cosmos DB that are owned by the specific user (read/write) or are shared among all users (shared/read-only).
 
-Specifically, the Resource Token Broker provides the user with a set of resource access tokens that give read-write permission to documents which are stored with a Partition Keys called `user-[Unique User Id]`, where the unique id of the user is provided by Azure AD B2C, as well as read-only access to documents stores with the partition key `shared`.
+Specifically, the Resource Token Broker provides the user with a set of resource access tokens that give read-write and read-only permissions to documents which are stored with a Partition Keys called `user-[Unique User Id]`, where the unique id of the user is provided by Azure AD B2C, as well as read-only access to documents stores with the partition key `shared`.
 
-In the [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction), the settings needed to configure the Resource Token Broker are defined as Azure Function Application Settings that are read when the [function is instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
+In the [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction), the settings needed to configure the Resource Token Broker are defined as Azure Function Application Settings that are read when the function is [instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
 
-When running your Azure Function in your emulator on your local developer machine those settings are read from the file `local.settings.json` in your project. Please note, that this file will be missing when you first open the Azure Function sample. This is because `local.settings.json` is excluded by default by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself, and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. The file 
-
-`local.settings.tutorial.json` is included to provide an example. You need to rename it to `local.settings.json` and then fill in the right values. When you have done that, `local.settings.json` will look something like this:
+When running your Azure Function in your emulator on your local developer machine, those settings are read from the file `local.settings.json` from your project. Please note, that this file will be missing when you first open the Azure Function sample. This is because `local.settings.json` is excluded by default by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself, and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. The file `local.settings.tutorial.json` is included to provide a guiding example. If you use it, you first need to rename it to `local.settings.json` and then fill in the right values. When you have done this, your `local.settings.json` file should look something like this:
 
 ```json
 {
@@ -149,7 +147,7 @@ When running your Azure Function in your emulator on your local developer machin
   }
 }
 ```
-
+*Note: In case you are wondering, the key etc. provided above are all fake.*
 ### Integrate the Azure Function with Azure AD B2C
 
 When you publish your Azure Function to production, you must configure the same settings that you've are spedifying in `local.settings.json` by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
