@@ -1,5 +1,6 @@
 {
-  "B2CHostName": "{Insert your name].b2clogin.com",
+  "ResourceTokenBrokerUrl": "[Insert the URL for your Resource Token Broker here]",
+  "B2CHostName": "{Insert your B2C application name].b2clogin.com",
   "TenantId": "[Insert your name].onmicrosoft.com",
   "ClientId": "[Insert your Client/Application id]",
   "SignUpSignInFlowName": "B2C_1_[Your user flow name]",

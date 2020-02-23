@@ -3,10 +3,13 @@ using System.Threading.Tasks;
 
 namespace CosmosResourceToken.Core.Client
 {
-    public interface ICacheSingleObjectByKey<T>
+    public interface ICacheSingleObjectByKey
     {
-        Task<(CacheObjectStateKind cacheState, T obj)> TryGetFromCache(string key);
+        Task<T> TryGetFromCache<T>(
+            string key,
+            Func<Task<T>> renewObjectFunc,
+            Func<T, Task<bool>> isCachedObjectValidFunc);
 
-        Task CacheObject(T obj, string key, DateTime expiresUtc);
+        Task CacheObject<T>(T obj, string key);
     }
 }

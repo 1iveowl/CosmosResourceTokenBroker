@@ -8,33 +8,47 @@ namespace XamarinForms.Client.Cache
 {
     // This is for demo purposes. You should probably consider something like https://github.com/reactiveui/Akavache
     // or https://github.com/jamesmontemagno/monkey-cache to be used here.
-    public class QuickAndDirtyCache<T>: ICacheSingleObjectByKey<T> where T : class, new()
+    public class QuickAndDirtyCache: ICacheSingleObjectByKey
     {
-        private readonly IDictionary<string, (T cacheObj, DateTime expires)> _cacheDictionary;
+        private readonly IDictionary<string, object> _cacheDictionary;
 
 
         public QuickAndDirtyCache()
         {
-            _cacheDictionary = new ConcurrentDictionary<string, (T obj, DateTime expires)>();
+            _cacheDictionary = new ConcurrentDictionary<string, object>();
         }
 
-        public async Task<(CacheObjectStateKind cacheState, T obj)> TryGetFromCache(string key) 
+        public async Task<T> TryGetFromCache<T>(
+            string key, 
+            Func<Task<T>> renewObjectFunc,
+            Func<T, Task<bool>> isCachedObjectValidFunc)
         {
-            if (_cacheDictionary.TryGetValue(key, out var cacheObj))
+            if (_cacheDictionary.TryGetValue(key, out var cachedObj))
             {
-                var (obj, expires) = cacheObj;
+                var obj = (T) cachedObj;
 
-                return expires < DateTime.UtcNow ? (CacheObjectStateKind.Ok, obj) : (CacheObjectStateKind.Expired, obj);
+                if (await isCachedObjectValidFunc(obj))
+                {
+                    return obj;
+                }
             }
 
-            await Task.CompletedTask;
+            var newObj = await renewObjectFunc();
 
-            return (CacheObjectStateKind.Missing, default);
+            await CacheObject(newObj, key);
+
+            return newObj;
+
         }
 
-        public async Task CacheObject(T obj, string key, DateTime expiresUtc)
+        public async Task CacheObject<T>(T obj, string key)
         {
-            _cacheDictionary.Add(key, (obj, expiresUtc));
+            if (_cacheDictionary.ContainsKey(key))
+            {
+                _cacheDictionary.Remove(key);
+            }
+
+            _cacheDictionary.Add(key, obj);
 
             await Task.CompletedTask;
         }

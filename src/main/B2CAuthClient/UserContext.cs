@@ -13,7 +13,7 @@ namespace B2CAuthClient
         public bool IsLoggedOn { get; }
         public string Name { get; }
         public string UserIdentifier { get; }
-        public bool NewUser { get; }
+        public bool IsNewUser { get; }
         public string Scope { get; }
         public string GivenName { get; }
         public string FamilyName { get;  }
@@ -38,7 +38,7 @@ namespace B2CAuthClient
             IsLoggedOn = isLoggedOn;
             Name = userContext.Name;
             UserIdentifier = userContext.UserIdentifier;
-            NewUser = userContext.NewUser;
+            IsNewUser = userContext.IsNewUser;
             Scope = userContext.Scope;
             GivenName = userContext.GivenName;
             FamilyName = userContext.FamilyName;
@@ -74,7 +74,7 @@ namespace B2CAuthClient
                 throw new ArgumentException("Unable to create UserContext. Object 'User' now defined in AuthenticationResult");
             }
 
-            NewUser = jwtPayload["newUser"]?.ToString()?.ToLowerInvariant() == "true";
+            IsNewUser = jwtPayload["newUser"]?.ToString()?.ToLowerInvariant() == "true";
             Scope = jwtPayload["scp"]?.ToString();
             Name = jwtPayload["user"]?.ToString();
             UserIdentifier = jwtPayload["sub"]?.ToString();

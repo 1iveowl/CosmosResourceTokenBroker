@@ -54,7 +54,7 @@ namespace CosmosResourceTokenClient
             {
                 var cosmosItem = new CosmosItem<T>(item, id, _partitionKeyStr);
 
-                var itemResponse = await _container.CreateItemAsync(cosmosItem, _partitionKey, cancellationToken: ct);
+                var itemResponse = await _container.CreateItemAsync(cosmosItem, _partitionKey, cancellationToken: ct).ConfigureAwait(false);
 
                 if (itemResponse.StatusCode == HttpStatusCode.Created)
                 {
@@ -85,7 +85,7 @@ namespace CosmosResourceTokenClient
             {
                 var cosmosItem = new CosmosItem<T>(item, id, _partitionKeyStr);
 
-                var itemResponse = await _container.UpsertItemAsync(cosmosItem, _partitionKey, cancellationToken: ct);
+                var itemResponse = await _container.UpsertItemAsync(cosmosItem, _partitionKey, cancellationToken: ct).ConfigureAwait(false);
 
                 if (itemResponse.StatusCode == HttpStatusCode.Created || itemResponse.StatusCode == HttpStatusCode.OK)
                 {
@@ -103,7 +103,7 @@ namespace CosmosResourceTokenClient
         {
             try
             {
-                var itemResponse = await _container.ReadItemAsync<CosmosItem<T>>(id, _partitionKey, cancellationToken: ct);
+                var itemResponse = await _container.ReadItemAsync<CosmosItem<T>>(id, _partitionKey, cancellationToken: ct).ConfigureAwait(false);
 
                 if (itemResponse.StatusCode == HttpStatusCode.OK)
                 {
@@ -126,7 +126,7 @@ namespace CosmosResourceTokenClient
         {
             try
             {
-                var itemResponse = await _container.DeleteItemAsync<CosmosItem<T>>(id, _partitionKey, cancellationToken: ct);
+                var itemResponse = await _container.DeleteItemAsync<CosmosItem<T>>(id, _partitionKey, cancellationToken: ct).ConfigureAwait(false);
 
                 if (itemResponse.StatusCode == HttpStatusCode.NoContent)
                 {
@@ -154,18 +154,15 @@ namespace CosmosResourceTokenClient
                     PartitionKey = new PartitionKey(_partitionKeyStr)
                 };
 
-                //var setIterator2 = _container.GetItemLinqQueryable<CosmosItem<T>>(true, )
-
                 var setIterator = _container
                     .GetItemLinqQueryable<CosmosItem<T>>(true, requestOptions: queryRequestOption)
-                    //.Where(i => i.PartitionKeyHeaderNameForCosmosItem == _partitionKeyStr)
                     .ToFeedIterator();
 
                 var itemList = new List<T>();
 
                 while (setIterator.HasMoreResults)
                 {
-                    foreach (var cosmosItem in await setIterator.ReadNextAsync(cancellationToken:ct))
+                    foreach (var cosmosItem in await setIterator.ReadNextAsync(cancellationToken:ct).ConfigureAwait(false))
                     {
                         itemList.Add(cosmosItem.Document);
                     }

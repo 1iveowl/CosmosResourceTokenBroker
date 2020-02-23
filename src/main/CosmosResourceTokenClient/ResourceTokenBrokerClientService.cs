@@ -3,6 +3,7 @@ using System.Data;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceToken.Core.Model;
@@ -32,7 +33,7 @@ namespace CosmosResourceTokenClient
             _httpClient = new HttpClient(handler);
         }
 
-        internal async Task<IResourcePermissionResponse> GetResourceToken(string accessToken)
+        internal async Task<IResourcePermissionResponse> GetResourceToken(string accessToken, CancellationToken ct)
         {
             try
             {
@@ -46,7 +47,7 @@ namespace CosmosResourceTokenClient
                 _httpClient.DefaultRequestHeaders.Add("Cache-Control", $"no-cache");
                 _httpClient.DefaultRequestHeaders.Add("Connection", $"keep-alive");
 
-                var response = await _httpClient.GetAsync(_resourceTokenBrokerUri);
+                var response = await _httpClient.GetAsync(_resourceTokenBrokerUri, ct).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -60,11 +61,10 @@ namespace CosmosResourceTokenClient
                     var serializer = new JsonSerializer {TypeNameHandling = TypeNameHandling.Auto};
 
 
-                    using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync());
+                    using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+
                     using var jsonReader = new JsonTextReader(streamReader);
-
                     
-
                     var result = serializer.Deserialize<ResourcePermissionResponse>(jsonReader);
 
                     return result;

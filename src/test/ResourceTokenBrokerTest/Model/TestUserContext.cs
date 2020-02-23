@@ -10,7 +10,7 @@ namespace ResourceTokenBrokerTest.Model
         public bool IsLoggedOn { get; set; }
         public string Name { get; set; }
         public string UserIdentifier { get; set; }
-        public bool NewUser { get; set; }
+        public bool IsNewUser { get; set; }
         public string Scope { get; set; }
         public string GivenName { get; set; }
         public string FamilyName { get; set; }

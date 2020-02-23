@@ -8,20 +8,23 @@ namespace B2CAuthClient.Abstract
     public interface IUserContext
     {
         bool IsLoggedOn { get; }
-        string Name { get; }
+        bool IsNewUser { get; }
+
+        string AccessToken { get; }
+        DateTime AccessTokenExpires { get; }
+        bool HasAccessTokenExpired { get; }
+
         string UserIdentifier { get; }
-        bool NewUser { get; }
+        string Name { get; }
         string Scope { get; }
         string GivenName { get;}
         string FamilyName { get;}
         string Province { get; }
         string PostalCode { get; }
-        string Country { get; } IEnumerable<string> EmailAddresses { get; }
+        string Country { get; } 
         string JobTitle { get; }
         string StreetAddress { get; }
         string City { get; }
-        string AccessToken { get;}
-        DateTime AccessTokenExpires { get; }
-        bool HasAccessTokenExpired { get; }
+        IEnumerable<string> EmailAddresses { get; }
     }
 }

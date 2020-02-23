@@ -51,20 +51,30 @@ namespace XamarinForms.Client
 
                 var scopes = ((JArray)configObject["Scopes"])?.Select(scope => scope?.ToString());
 
+                var iOSChainGroup = "com.microsoft.adalcache";
+
+                Func<bool> isAndroidDeviceFunc = () => DeviceInfo.Platform == DevicePlatform.Android;
+
+                Func<bool> isiOSDeviceFunc = () => DeviceInfo.Platform == DevicePlatform.iOS
+                                                   || DeviceInfo.Platform == DevicePlatform.watchOS
+                                                   || DeviceInfo.Platform == DevicePlatform.tvOS;
+
+                Func<object> getAndroidParentWindowFunc = () =>
+                    DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow();
+
+
                 _authService = new B2CAuthService(
                     b2cHostName,
                     tenantId,
                     clientId,
                     signUpSignInFlowName,
                     scopes,
-                    "com.microsoft.adalcache",
-                    () => DeviceInfo.Platform == DevicePlatform.Android,
-                    () => DeviceInfo.Platform == DevicePlatform.iOS 
-                          || DeviceInfo.Platform == DevicePlatform.watchOS 
-                          || DeviceInfo.Platform == DevicePlatform.tvOS,
-                    () => DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow());
+                    iOSChainGroup,
+                    isAndroidDeviceFunc,
+                    isiOSDeviceFunc,
+                    getAndroidParentWindowFunc);
 
-                var quickAndDirtyPermissionsTokenCache = new QuickAndDirtyCache<ResourcePermissionResponse>();
+                var quickAndDirtyPermissionsTokenCache = new QuickAndDirtyCache();
 
                 _cosmosTokenClient = new CosmosTokenClient(_authService, resourceTokenBrokerUrl, quickAndDirtyPermissionsTokenCache);
             }
@@ -74,7 +84,6 @@ namespace XamarinForms.Client
 
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
-            //var userContext = await _authService.AcquireUserContextForSpecificScope(_scopes.FirstOrDefault());
             _userContext = await _authService.SignIn();
             SaveButton.IsEnabled = true;
         }

@@ -15,7 +15,7 @@ namespace CosmosResourceTokenClient
         public CosmosTokenClient(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
-            ICacheSingleObjectByKey<ResourcePermissionResponse> resourceTokenCache = null)
+            ICacheSingleObjectByKey resourceTokenCache = null)
         {
             _cosmosClientHandler = new CosmosTokenClientHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
         }
@@ -32,7 +32,7 @@ namespace CosmosResourceTokenClient
 
                 return await cosmosClientEx.Create(id, item, cancellationToken);
 
-            }, PermissionModeKind.UserReadWrite);
+            }, PermissionModeKind.UserReadWrite, cancellationToken);
 
         public async Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
@@ -46,7 +46,7 @@ namespace CosmosResourceTokenClient
 
                 return await cosmosClientEx.Replace(id, item, cancellationToken);
 
-            }, PermissionModeKind.UserReadWrite);
+            }, PermissionModeKind.UserReadWrite, cancellationToken);
 
         public async Task<T> Read<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
@@ -58,7 +58,7 @@ namespace CosmosResourceTokenClient
                 await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, permissionMode);
 
                 return await cosmosClientEx.Read(id, cancellationToken);
-            }, PermissionModeKind.UserRead);
+            }, PermissionModeKind.UserRead, cancellationToken);
 
 
         public async Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
@@ -73,7 +73,7 @@ namespace CosmosResourceTokenClient
 
                 await cosmosClientEx.Delete(id, cancellationToken);
 
-            }, PermissionModeKind.UserReadWrite);
+            }, PermissionModeKind.UserReadWrite, cancellationToken);
 
         public async Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
@@ -86,7 +86,7 @@ namespace CosmosResourceTokenClient
 
                 return await cosmosClientEx.GetList(cancellationToken);
 
-            }, PermissionModeKind.UserReadWrite);
+            }, PermissionModeKind.UserReadWrite, cancellationToken);
 
         public async ValueTask DisposeAsync()
         {
