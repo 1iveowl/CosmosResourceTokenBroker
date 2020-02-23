@@ -16,9 +16,9 @@ In other words, I would now sooner or later run out of blue pills. Of course, th
 - [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview).
 
 
-I've always enjoyed learning new stuff, and as I dove in, I found that the migration efforts was kind enough to offer even more learning opportunities than first anticipated. Thus, I decided to document my learning and share my insigts, as well as the code that I've created in the process. I've shared this in this repository in the hope that others might find this helpful in their learning/migration journey too.
+I've always enjoyed learning new stuff, and as I dove in, I found that the migration efforts was kind enough to offer even more learning opportunities than first anticipated. Thus, I decided to document my learning and share my insigts, as well as the code that I've created in the process here. I share this, in the hope that others might find this helpful and useful in their own learning/migration journey too.
 
-I believe that what I'm sharing in this repository is also relevant for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB, without ever used AppCenter Auth and AppCenter Data.
+Also, I believe that what I'm sharing here in this repository, could also relevant for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB, without ever having used AppCenter Auth or AppCenter Data.
 
 ## About this library
 
