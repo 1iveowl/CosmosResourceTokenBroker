@@ -26,7 +26,7 @@ This repository presents:
 
 - A guide for configuring and using the aforementioned technologies in a mobile app type scenario.
 - A code library for implementing a Resource Token Broker Service for Azure Cosmos DB.
-- A set of samples help make sense of it all.
+- A set of samples to help make sense of it all.
 
 The samples demonstrate how to run the Resource Token Broker service as an Azure Function. There is also a sample of a Xamarin Forms app for iOS and Android, which uses the broker to access Cosmos data in a secure maner utilizing Azure AD B2C and MSAL for authentication.
 
