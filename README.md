@@ -23,9 +23,9 @@ I've always enjoyed learning new stuff, and as I dove in, I found that migration
 I share this code and learning here in the hope that others might find it helpful and useful in their own learning/migration journey too. Also, this repository is not only for the migration scenario. I believe that what is shared here, is likely to be relevant too for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB - i.e. without ever having used AppCenter Auth or AppCenter Data before.
 
 ## About the author
-I work at Microsoft, however I do not work in the AppCenter team and I haven't worked with the AppCenter team making this. I do not work in the MSAL, Azure AD B2C, Azure Cosmos DB, Azure Functions, Xamarin Forms or any other team creating the technologies used in this repository, either. In fact, everything presented here was created on my own time, outside my professional work at Microsoft. The driving force being solely my love of programming.
+I work at Microsoft, however I do not work in the AppCenter team and I haven't worked with the AppCenter team as I made what you are reading right now. I do not work in the MSAL, Azure AD B2C, Azure Cosmos DB, Azure Functions, Xamarin Forms or any other team creating the technologies used in this repository, either. In fact, everything presented here was created on my own time, outside my professional work at Microsoft. The driving force being solely my curiosity and my love of programming.
 
-Feedback, comments, PR's etc. is welcome. 
+Feedback, comments, PR's etc. are welcome. 
 
 ## About this library
 
