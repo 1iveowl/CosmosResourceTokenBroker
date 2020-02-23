@@ -19,7 +19,6 @@ namespace AzureFunction.Broker
         private readonly string _cosmosKey;
         private readonly string _cosmosDatabaseId;
         private readonly string _cosmosCollectionId;
-        //private readonly string _partitionKeyHeader;
         
         public CosmosResourceTokenBroker()
         {
@@ -28,7 +27,6 @@ namespace AzureFunction.Broker
             _cosmosKey = Environment.GetEnvironmentVariable("CosmosKey");
             _cosmosDatabaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
             _cosmosCollectionId = Environment.GetEnvironmentVariable("CosmosCollectionId");
-            //_partitionKeyHeader = Environment.GetEnvironmentVariable("CosmosPartitionKeyHeader");
         }
 
         [FunctionName("CosmosResourceTokenBroker")]
@@ -46,12 +44,12 @@ namespace AzureFunction.Broker
 
                 if (string.IsNullOrEmpty(accessToken))
                 {
-                    return LogErrorAndCreateBadObjectResult("Access token is missing", log);
+                    return LogErrorAndReturnBadObjectResult("Access token is missing", log);
                 }
             }
             catch (Exception ex)
             {
-                return LogErrorAndCreateBadObjectResult("Unable to read Authorization header", log, ex);
+                return LogErrorAndReturnBadObjectResult("Unable to read Authorization header", log, ex);
             }
 
 
@@ -68,22 +66,22 @@ namespace AzureFunction.Broker
 
                 if (!handler.CanValidateToken)
                 {
-                    return LogErrorAndCreateBadObjectResult($"Unable to validate token: {accessToken}", log);
+                    return LogErrorAndReturnBadObjectResult($"Unable to validate token: {accessToken}", log);
                 }
             }
             catch (Exception ex)
             {
-                return LogErrorAndCreateBadObjectResult($"Unable to read JWT token: {accessToken}", log, ex);
+                return LogErrorAndReturnBadObjectResult($"Unable to read JWT token: {accessToken}", log, ex);
             }
 
 #if DEBUG
             var expires = token.ValidTo;
 
-            var ignoreExpires = req?.Headers?["IgnoreExpires"].ToString() == "true";
+            var ignoreExpires = req?.Headers?["IgnoreExpires"].ToString().ToLower() == "true";
 
             if (DateTime.UtcNow > expires && !ignoreExpires)
             {
-                return LogErrorAndCreateBadObjectResult("The access token have expired. " +
+                return LogErrorAndReturnBadObjectResult("The access token have expired. " +
                                                         "Note this error is for debug mode only, for use when testing. " +
                                                         "In production access token validity is handled by Azure Functions configuration.", log);
             }
@@ -94,29 +92,32 @@ namespace AzureFunction.Broker
 
             if (string.IsNullOrEmpty(userObjectId))
             {
-                return LogErrorAndCreateBadObjectResult("No subject defined in access token", log);
+                return LogErrorAndReturnBadObjectResult("No subject defined in access token", log);
             }
 
             // Getting the permission scope from the Access Token to determine the permission mode.
-            var scopes = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value.Split(' ');
+            var accessTokenScopes = token?.Claims.FirstOrDefault(c => c.Type.ToLowerInvariant() == "scp")?.Value.Split(' ');
 
-            if (!scopes?.Any() ?? false)
+            if (!accessTokenScopes?.Any() ?? false)
             {
-                return LogErrorAndCreateBadObjectResult("No scopes defined", log);
+                return LogErrorAndReturnBadObjectResult("No scopes defined", log);
             }
 
-            var permissionScopes = scopes?.Select(scope => KnownPermissionScopes?.FirstOrDefault(ks => ks?.Scope == scope));
+
+            // Extracting the known scopes only.
+            var permissionScopes = accessTokenScopes?.Select(scope => KnownPermissionScopes?.FirstOrDefault(ks => ks?.Scope == scope));
             
             if (!permissionScopes?.Any() ?? false)
             {
-                return LogErrorAndCreateBadObjectResult($"No known scopes: " +
-                                                        $"{string.Join(", ", scopes)}. " +
+                return LogErrorAndReturnBadObjectResult($"No known scopes: " +
+                                                        $"{string.Join(", ", accessTokenScopes)}. " +
                                                         $"Known scopes are: " +
                                                         $"{string.Join(", ", KnownPermissionScopes.Select(ks => ks.Scope))}", log);
             }
 
             try
             {
+
                 await using var brokerService = new ResourceTokenBrokerService(_cosmosHostUrl, _cosmosKey, _cosmosDatabaseId, _cosmosCollectionId);
 
                 // Getting the Resource Permission Tokens
@@ -126,13 +127,13 @@ namespace AzureFunction.Broker
             }
             catch (Exception ex)
             {
-                return LogErrorAndCreateBadObjectResult($"Unable to acquire resource token from Cosmos DB " +
+                return LogErrorAndReturnBadObjectResult($"Unable to acquire resource token from Cosmos DB " +
                                                         $"for user with id: {userObjectId} " +
                                                         $"for permission scopes: {string.Join(", ", permissionScopes)}.", log, ex);
             }
         }
 
-        private static BadRequestObjectResult LogErrorAndCreateBadObjectResult(string error, ILogger log, Exception ex = default)
+        private static BadRequestObjectResult LogErrorAndReturnBadObjectResult(string error, ILogger log, Exception ex = default)
         {
             log.Log(LogLevel.Error, ex is null ? $"{error}" : $"{error}. Unhandled exception: {ex}");
             return new BadRequestObjectResult(ex is null ? $"{error}" :$"{error}. Unhandled exception: {ex}");
