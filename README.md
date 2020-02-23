@@ -10,15 +10,15 @@ I recently recently created a Xamarin Forms app for [iOS](https://apps.apple.com
 
 Chance would have it, that Microsoft recently decided to change direction and instead of graduating AppCenter Auth And AppCenter Data from preview to final release [both will instead be retired](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). 
 
-In other words, I would now sooner or later run out of blue pills. Of course, there's good to be said about red pills too, so I quickly plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data - i.e. 
+In other words, I would now sooner or later run out of blue pills. Of course, there's good to be said about red pills too, so I quickly plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e. 
 - [Azure AD B2C](https://docs.microsoft.com/en-us/azure/active-directory-b2c/overview).
 - [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction).
 - [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview).
 
 
-Now, I've always enjoyed learning new stuff, and as I dove in here, I found that the shift was kind enough to offer even more learning opportunities than first anticipated. Thus, I decided to document my learning and share my insigts, as well as the code I've created in the migration process, in the hope that others might find this helpful in their learning/migration journey too.
+I've always enjoyed learning new stuff, and as I dove in, I found that the migration efforts was kind enough to offer even more learning opportunities than first anticipated. Thus, I decided to document my learning and share my insigts, as well as the code that I've created in the process. I've shared this in this repository in the hope that others might find this helpful in their learning/migration journey too.
 
-I believe that what I'm sharing in this repository is both relevant for those migrating from AppCenter Auth and AppCenter Data, as well as for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB.
+I believe that what I'm sharing in this repository is also relevant for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB, without ever used AppCenter Auth and AppCenter Data.
 
 ## About this library
 
