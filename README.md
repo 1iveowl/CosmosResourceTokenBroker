@@ -8,17 +8,17 @@
 
 I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1iveowl-expenses/id1457905006) and [Android](https://play.google.com/store/apps/details?id=com.x1iveowl.myeasyexpense). Early on in the development process I made a [blue pill discision](https://en.wikipedia.org/wiki/Red_pill_and_blue_pill), choosing to lean on the preview version of [AppCenter Auth](https://docs.microsoft.com/en-us/appcenter/auth/#how-auth-works) and [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/data/).
 
-Fast forward a few months and Microsoft decided to make some change. Instead of graduating AppCenter Auth and AppCenter Data, from preview to final release, [Microsoft announced that both would instead be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would soon run out of blue pills. 
+Fast forward a few months and Microsoft decided to make some change. Hence, instead of graduating AppCenter Auth and AppCenter Data, from preview to final release, [Microsoft announced that both would instead be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would soon run out of blue pills. Such is the world of software and choosing to rely on preview versions, come with it's share of risk. 
 
-Such is the world of software and choosing to rely on preview versions, come with it's share of risk. Anyhow, there's certainly good to be said about red pills too. Hence, I decided plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e: 
+Anyhow, there's certainly good to be said about red pills too. Hence, I decided plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e: 
 - [Azure AD B2C](https://docs.microsoft.com/en-us/azure/active-directory-b2c/overview).
 - [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction).
 - [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview).
 
 
-I've always enjoyed learning new stuff, and as I dove in, I found that this migration effort was kind enough to offer even more learning opportunities than first anticipated. Thus early on, I decided to document my learning and share my insigts, as well as the code that I'd created in the process. I share this here, in the hope that others might find this helpful and useful in their own learning/migration journey too.
+I've always enjoyed learning new stuff, and as I dove in, I found that this migration effort was kind enough to offer even more learning opportunities than first anticipated😉. Thus as I was struggeling along a bit, I found that I would help others (and frankly myself too) if I documents my learning and code as I progressed. I share this code and learning here in the hope that others might find it helpful and useful in their own learning/migration journey too.
 
-Furthermore, I believe that what is shared in this repository is relevant too fopr those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB, without ever having used AppCenter Auth or AppCenter Data.
+And this is not only for the migration scenario. I believe that what is shared in this repository is relevant too for those starting out with apps using Azure AD B2C, MSAL and Azure Cosmos DB, without ever having used AppCenter Auth or AppCenter Data before.
 
 ## About this library
 
