@@ -24,7 +24,7 @@ Also, I believe that what I'm sharing here in this repository, could also releva
 
 This repository presents:
 
-- A guide for configuring and using the forementioned technologies in a mobile app type scenario.
+- A guide for configuring and using the aforementioned technologies in a mobile app type scenario.
 - A code library for implementing a Resource Token Broker Service for Azure Cosmos DB.
 - A set of samples help make sense of it all.
 
