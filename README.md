@@ -8,7 +8,7 @@
 
 I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1iveowl-expenses/id1457905006) and [Android](https://play.google.com/store/apps/details?id=com.x1iveowl.myeasyexpense). Early on in the development process, I made a [blue pill discision](https://en.wikipedia.org/wiki/Red_pill_and_blue_pill), choosing to lean on the preview edition of [AppCenter Auth](https://docs.microsoft.com/en-us/appcenter/auth/#how-auth-works) and [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/data/).
 
-Chance would have it, that Microsoft recently decided to change direction and instead of graduating AppCenter Auth And AppCenter Data from preview to final release [both will instead be retired](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). 
+Fast forward a few months and Microsoft decided to change direction. Instead of graduating AppCenter Auth And AppCenter Data from preview to final release [both will instead be retired](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). 
 
 In other words, I would now sooner or later run out of blue pills. Of course, there's good to be said about red pills too, so I quickly plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e. 
 - [Azure AD B2C](https://docs.microsoft.com/en-us/azure/active-directory-b2c/overview).
