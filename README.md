@@ -10,7 +10,7 @@ I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1
 
 Fast forward a few months and Microsoft decided to change direction. Instead of graduating AppCenter Auth and AppCenter Data, from preview to final release, [both will instead be retired](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would soon run out of blue pills. 
 
-Of course, there's certainly good to be said about red pills too. Thus, without looking back, I quicky plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e. 
+Of course, there's certainly good to be said about red pills too. Thus, without looking back, I resolutely plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e. 
 - [Azure AD B2C](https://docs.microsoft.com/en-us/azure/active-directory-b2c/overview).
 - [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction).
 - [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview).
