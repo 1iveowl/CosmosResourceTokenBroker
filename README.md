@@ -24,8 +24,8 @@ Furthermore, I believe that what is shared in this repository is relevant too fo
 
 This repository presents:
 
-- A guide for configuring and using the aforementioned technologies in a mobile app type scenario.
-- A code library for implementing a Resource Token Broker Service for Azure Cosmos DB.
+- A guide for configuring and using the aforementioned technologies in a Mobile App type scenario.
+- A set of code libraries for implementing a Resource Token Broker Service for Azure Cosmos DB and using it from the client/app side.
 - A set of samples to help make sense of it all.
 
 The samples demonstrate how to run the Resource Token Broker service as an Azure Function. There is also a sample of a Xamarin Forms app for iOS and Android, which uses the broker to access Cosmos data in a secure maner utilizing Azure AD B2C and MSAL for authentication.
@@ -343,6 +343,8 @@ That's it. You've made it this far, and while there's certainly a lot of moving 
 
 ## Step 5 (optional): Caching
 
-One more thing. App are all different, but more often than not, an app will benefit from caching documents reads, and also sometimes document writes. Such caching offers off-line support, speed things up and to make your app less chatty on the internet. It all depends on the type of app of cause. 
+One more thing. Apps are all different, however more often than not an app will benefit from a caching feature to improve the experience with documents reads, and usually also document writes. Such caching offers off-line support, it speed things up and i makes the app less chatty on the internet. If and how much is needed, all depend on the type of app of cause.
 
-AppCenter Data did offers some of this caching, primarily for the off-line scenarios. However, no such caching is offered here, but it might be worth taking a look at [Akavache](https://github.com/reactiveui/Akavache).
+AppCenter Data did offers some level of caching. However, no such caching is offered here. 
+
+If cahcing is needed, it might for the app, it might be worth taking a look at something like: [Akavache](https://github.com/reactiveui/Akavache).
