@@ -6,7 +6,7 @@
 
 ## Why this repository?
 
-I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1iveowl-expenses/id1457905006) and [Android](https://play.google.com/store/apps/details?id=com.x1iveowl.myeasyexpense). Early on in the development process I made a [blue pill discision](https://en.wikipedia.org/wiki/Red_pill_and_blue_pill), choosing to lean on the preview version of [AppCenter Auth](https://docs.microsoft.com/en-us/appcenter/auth/#how-auth-works) and [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/data/).
+I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1iveowl-expenses/id1457905006) and [Android](https://play.google.com/store/apps/details?id=com.x1iveowl.myeasyexpense). Early on in the development process, I made a [blue pill discision](https://en.wikipedia.org/wiki/Red_pill_and_blue_pill), choosing to lean on the preview version of [AppCenter Auth](https://docs.microsoft.com/en-us/appcenter/auth/#how-auth-works) and [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/data/).
 
 Fast forward a few months and it things didn't turn out quite as expected. Instead of graduating AppCenter Auth and AppCenter Data, from preview to a final release, [Microsoft announced that both would be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would now soon run out of blue pills. 
 
@@ -71,8 +71,8 @@ These are the overall steps needed, no matter if migration away from AppCenter A
 
 1. Configure the Azure AD B2C Tenant. Specifically, three API's/scopes must be created and exposed and added with API Permissions. Details for how to do this is outlined below.
 2. Implement a Resource Token Broker and configure it so that it operates seamlessly togehter with your Azure AD B2C and your Cosmos DB.
-3. Program your app to use MSAL for authentication.
-4. Program your app to store data with Cosmos DB.
+3. Program your app to use MSAL for authentication - i.e. replace AppCenter Auth.
+4. Program your app to store data with Cosmos DB - i.e. replace AppCenter Data.
 5. *(Optional)* You might also want to consider implementing client/app side caching of the data/Cosmos documents.
 
 ## Step 1: Configuring the Azure AD B2C Tenant
@@ -150,7 +150,7 @@ When running your Azure Function in your emulator on your local developer machin
 *Note: In case you are wondering, the key etc. provided above are all fake.*
 ### Integrate the Azure Function with Azure AD B2C
 
-When you publish your Azure Function to production, you must configure the same settings that you've are spedifying in `local.settings.json` by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
+When you publish your Azure Function to production, you must configure these same settings that you've are spedifying in `local.settings.json` , but by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
 
 You will also need to integrate Azure Functions with Azure AD B2C. This way Azure Functions will *auto-magically* take care of the authentication of the user for you. There's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C here: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
@@ -166,6 +166,8 @@ Used with this step:
 
 - [B2CAuthClient library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient).
 - [Xamarin Forms Sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
+
+If you are migrating, then this is the step where you replace AppCenter Auth with MSAL.
 
 To make it easier to get started, this repository offers a simple wrapper, specifically created for MSAL and Azure Ad B2C Authentication: [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient). You don't need to use it, and it's really only a few hundred lines of code. It does however provide functionality that you also need below in the next step, and thus migth offer a good starting point.
 
@@ -307,29 +309,33 @@ Used with this step:
 - [Cosmos Resource Token Client library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/CosmosResourceTokenClient) and this [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
 - [Xamarin Forms Sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client).
 
+If your are migrating, then this is the step where you replace AppCenter Data with direct interaction with Azure Cosmos DB. Here this is done by utilizing the Cosmos Token Client library.
+
 By now your Resource Token Broker and your Xamarin Forms app should be all configured.
 
-To start reading and writing to Cosmos DB all you need to do is to instantiate the Cosmos Token Client:
+To start reading and writing to Cosmos DB all you need to do is to instantiate the Cosmos Token Client, like this:
 
 ```csharp
 ICosmosTokenClient cosmosTokenClient = new CosmosTokenClient(authService, resourceBrokerUrl);
 ```
 
-`CosmosTokenClient` uses Dependency Injection. Hence, if you don't like, or for some reason can't use, the `B2CAuthService` provided in this repository then you can still use the CosmosTokenClient. All you need to do is implement the simple `IB2CAuthService`  interfaces and passed your own version of the B2CAuthService as the first parameter in the constructor.
+`CosmosTokenClient` uses Dependency Injection. Hence, if you don't like, or for some reason can't use, the `B2CAuthService` provided in this repository, then you can still continue use the `CosmosTokenClient`. All you would need to do, in this case, would be to implement the simple `IB2CAuthService` interface and passed your own version of the B2CAuthService as the first parameter in the `CosmosTokenClient` constructor.
 
-The `CosmosTokenClient` will try to acquire the UserContext and specifically the Access Token from the `B2CAuthService` instance passed in with the contructor. If the user is not already logged in (i.e. CurrentUserContext is null), the `CosmosTokenClient` will try to acquire the User Context silently from the MSAL Client cache, - i.e. without presenting the user with the option to log in. If it's not possible for `CosmosTokenClient` to acquire the User Context this way either then it will throw: `CosmosClientAuthenticationException`. In other words, the approach used here is that it is best to leave it entirely up to the app developer, to define and handle the logic for when and how to present the user with an interactive login.
+At runtime, the `CosmosTokenClient` will try to acquire the UserContext and specifically the Access Token from the `B2CAuthService`. If the user is not already logged in (i.e. CurrentUserContext is null), the `CosmosTokenClient` will try to acquire the User Context **silently**, from the MSAL Client cache - i.e. it will do so without presenting the user with the option to log in. If it's not possible for `CosmosTokenClient` to acquire the User Context, then it will throw a: `CosmosClientAuthenticationException`. In other words, the approach chosen here, is that it is best to leave it entirely up to the app developer, to define and handle the logic for when and how to present the user with an interactive login.
 
-Also, note that `CosmosTokenClient` has a third optional parameter which accepts an instance of a class with the `ICacheSingleObjectByKey` interface. It is strongly advice that you use this, as it allows the CosmosTokenClient to cache permission requests on a per user basis. There's a quick and dirty, yet fully functional, implementation of this caching interface included as part of the Xamarin Forms sample, you'll find it [here](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/master/src/sample/client/XamarinForms.Client/XamarinForms.Client/Cache/QuickAndDirtyCache.cs).
+Also, note that `CosmosTokenClient` has a third and optional parameter that is accepted by it's constructor. This parameter accepts an instance of a class with the `ICacheSingleObjectByKey` interface. It is strongly adviced that you utilize this for none-test implementations, as it allows the CosmosTokenClient to cache permission requests. 
 
-The `ICosmosTokenClient` interface is very similar to [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/sdk/data/xamarin). This is no coincidence, as this approach leaves for an easy migration away from AppCenter Data, now that it is being retired.
+There's a quick and dirty, yet fully functional, implementation of this caching interface included as part of the Xamarin Forms sample. You'll find it [here](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/master/src/sample/client/XamarinForms.Client/XamarinForms.Client/Cache/QuickAndDirtyCache.cs).
 
-For example Creating a document with AppCenter data looksed like this:
+The `CosmosTokenClient` is very similar to [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/sdk/data/xamarin). This is no coincidence, as this approach provides for an easy migration.
+
+For example Creating a document with AppCenter data looks like this:
 
 ```csharp
 await Data.CreateAsync(id, personObj, DefaultPartitions.UserDocuments, new WriteOptions(deviceTimeToLive));
 ```
 
-Using the CosmosTokenClient the same create operation will look like this:
+When using `CosmosTokenClient`, the same create operation looks like this:
 ```csharp
 await cosmosTokenClient.Create(id, personObj, DefaultPartitionKind.UserDocument);
 ```
@@ -342,14 +348,14 @@ Similary, the CosmosTokenClient uses the `DefaultPartitionKind` enum with these 
 - UserDocument
 - Shared 
 
-There's no `WriteOption` etc. available for CosmosTokenClient, as caching is out of scope (See step 5 below). 
+There's no `WriteOption` etc. available for CosmosTokenClient, as caching is out of scope (See comments in step 5 below). 
 
-That's it. You've made it this far, and while there's certainly a lot of moving parts and settings that need to align before getting here, when you finally get to this point, reading and writing documents to Cosmos DB using the security provided by the Resource Token Broker, is actually pretty straight forward. 😊
-
+That's it. You've made it this far. And while there's certainly a lot of moving parts and settings that need to align with the moon and the stares before getting here. As you arrive, I hope that you'll find that reading and writing documents to Cosmos DB using the Resource Token Broker, is now pretty straight forward going forward.
+c
 ## Step 5 (optional): Caching
 
-One more thing. Apps are all different, however more often than not an app will benefit from a caching feature to improve the experience with documents reads, and usually also document writes. Such caching offers off-line support, it speed things up and i makes the app less chatty on the internet. If and how much is needed, all depend on the type of app of cause.
+One more thing. Apps are all different, however more often than not, an app will benefit from a caching feature to improve the experience with documents reads and writes. Such caching offers off-line support, it speed things up and i makes the app less chatty on the internet. If and how much caching is needed, all depend on the type of app, of course.
 
 AppCenter Data did offers some level of caching. However, no such caching is offered here. 
 
-If cahcing is needed, it might for the app, it might be worth taking a look at something like: [Akavache](https://github.com/reactiveui/Akavache).
+If cahcing is needed, it might be worth taking a look at something like [Akavache](https://github.com/reactiveui/Akavache).
