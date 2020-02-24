@@ -42,6 +42,32 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourceTokenBrokerTest", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{D0E55FB2-922E-4CDF-B5F1-77D02A238CA6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Broker", "Broker", "{599DD124-AC57-40A5-BF52-B68F82713C2B}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\build\broker\build.ps1 = ..\..\build\broker\build.ps1
+		..\..\build\broker\publish.ps1 = ..\..\build\broker\publish.ps1
+		..\..\build\broker\ResourceTokenBroker.nuspec = ..\..\build\broker\ResourceTokenBroker.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D985C3A4-48DA-4197-9667-80E3AFD6E037}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\build\1iveowl-logo.png = ..\..\build\1iveowl-logo.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{727361BC-6F7D-40C9-A07A-4F5B83CC4C75}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\build\auth\B2CAuth.nuspec = ..\..\build\auth\B2CAuth.nuspec
+		..\..\build\auth\build.ps1 = ..\..\build\auth\build.ps1
+		..\..\build\auth\publish.ps1 = ..\..\build\auth\publish.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{BCDCF365-9ACA-416A-B24F-2B65336E55B0}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\build\client\build.ps1 = ..\..\build\client\build.ps1
+		..\..\build\client\publish.ps1 = ..\..\build\client\publish.ps1
+		..\..\build\client\ResourceTokenClient.nuspec = ..\..\build\client\ResourceTokenClient.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -194,6 +220,9 @@ Global
 		{CC467A31-6DDE-4EF1-84BD-976075D9BA86} = {99FB34C1-F3A9-40CE-8D1D-096F973855BA}
 		{DEE6641C-3039-4142-9E77-3CE58B2BADDD} = {66A99293-D02D-412C-831F-210F0E2F231F}
 		{3AB28583-59E1-4796-A6EE-5F733D8EBA0E} = {D0E55FB2-922E-4CDF-B5F1-77D02A238CA6}
+		{599DD124-AC57-40A5-BF52-B68F82713C2B} = {D985C3A4-48DA-4197-9667-80E3AFD6E037}
+		{727361BC-6F7D-40C9-A07A-4F5B83CC4C75} = {D985C3A4-48DA-4197-9667-80E3AFD6E037}
+		{BCDCF365-9ACA-416A-B24F-2B65336E55B0} = {D985C3A4-48DA-4197-9667-80E3AFD6E037}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5EE37B31-C22A-476A-9001-484D3961BB09}

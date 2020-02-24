@@ -6,7 +6,6 @@ using System.Reflection;
 using B2CAuthClient;
 using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
-using CosmosResourceToken.Core.Model;
 using CosmosResourceTokenClient;
 using Newtonsoft.Json.Linq;
 using Xamarin.Essentials;
