@@ -8,7 +8,7 @@
 
 I recently created a Xamarin Forms app for [iOS](https://apps.apple.com/us/app/1iveowl-expenses/id1457905006) and [Android](https://play.google.com/store/apps/details?id=com.x1iveowl.myeasyexpense). Early on in the development process, I made a [blue pill discision](https://en.wikipedia.org/wiki/Red_pill_and_blue_pill), choosing to lean on the preview version of [AppCenter Auth](https://docs.microsoft.com/en-us/appcenter/auth/#how-auth-works) and [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/data/).
 
-Fast forward a few months and it things didn't turn out quite as expected. Instead of graduating AppCenter Auth and AppCenter Data, from preview to a final release, [Microsoft announced that both would be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would now soon run out of blue pills. 
+Fast forward a few months and things didn't turn out quite as expected and instead of graduating AppCenter Auth and AppCenter Data, from preview to a final release, [Microsoft announced that both would be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would now soon run out of blue pills. 
 
 Such is the world of software i suppose, and choosing to rely on preview versions, came with a risk, although I really hadn't given it much thought. It stung a bit, but my project started out as a hobby project and an opportunity to learn, so well. 
 
