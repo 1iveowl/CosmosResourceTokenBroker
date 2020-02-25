@@ -147,6 +147,8 @@ Specifically, the Resource Token Broker provides the user with a set of resource
 
 In the [sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/broker/AzureFunction), the settings needed to configure the Resource Token Broker are defined as Azure Function Application Settings that are read when the function is [instantiated](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/6f043ceb5c436e131f32d76256ab6caa508ec4f5/src/sample/broker/AzureFunction.Broker/CosmosResourceTokenBroker.cs#L26). 
 
+#### Configuring Azure Function for development/emulator
+
 When running your Azure Function in your emulator on your local developer machine, those settings are read from the file `local.settings.json` from your project. Please note, that this file will be missing when you first open the Azure Function sample. This is because `local.settings.json` is excluded by default by git, to protect developers from inadvertedly sharing secrets. You will therefore need to fill out these details yourself, and do so according to your configuration of Azure Cosmos DB and Azure AD B2C. The file `local.settings.tutorial.json` is included to provide a guiding example. If you use it, you first need to rename it to `local.settings.json` and then fill in the right values. When you have done this, your `local.settings.json` file should look something like this:
 
 ```json
@@ -164,15 +166,15 @@ When running your Azure Function in your emulator on your local developer machin
 ```
 *Note: In case you are wondering, the key etc. provided above are all fake.*
 
-### Configuring Azure Function for production
+#### Configuring Azure Function for production
 
 When you publish your Azure Function to production, you must configure these same settings that you've are spedifying in `local.settings.json` , but by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
 
-### Integrate the Azure Function with Azure AD B2C
+#### Integrate the Azure Function with Azure AD B2C
 
 You will also need to integrate Azure Functions with Azure AD B2C. This way Azure Functions will *auto-magically* take care of the authentication of the user for you. There's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C here: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
-### Testing integration between Azure Function and Azure AD B2C
+#### Testing integration between Azure Function and Azure AD B2C
 
 You should now have a Resource Token Broker running nicely as an Azure Function. Any access to the Azure Function will now requires AD authentication - i.e. a JWT Access Token is presented in the Authentication Header when accessing the Azure Function.  
 
