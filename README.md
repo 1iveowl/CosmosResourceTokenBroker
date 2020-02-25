@@ -121,7 +121,7 @@ To configure this:
 14. Click **Save and continue**.
 15. Click **Grant admin consent**.
 
-That's it. Azure AD B2C is now configured.
+That's it. Azure AD B2C is now configured with the new scopes and permissions, which will now be part of the access token granted by Azure AD B2C for authenticated users.
 
 ## Step 2: Implementing the Resource Token Broker
 
