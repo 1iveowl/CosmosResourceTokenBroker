@@ -186,7 +186,7 @@ If you are migrating, then this is the step where you replace AppCenter Auth wit
 
 To make it easier to get started, this repository offers a simple wrapper, specifically created for MSAL and Azure Ad B2C Authentication: [B2CAuthClient Library](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/main/B2CAuthClient). You don't need to use it, and it's really only a few hundred lines of code. It does however provide functionality that you also need below in the next step, and thus migth offer a good starting point.
 
-The [Xamarin Forms sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client) in this repository is based on this official sample from Microsoft: [Integrate Azure AD B2C into a Xamarin forms app using MSAL)][(https://github.com/Azure-Samples/active-directory-b2c-xamarin-native)).
+The [Xamarin Forms sample](https://github.com/1iveowl/CosmosResourceTokenBroker/tree/master/src/sample/client/XamarinForms.Client) in this repository is based on this official sample from Microsoft: [Integrate Azure AD B2C into a Xamarin forms app using MSAL)](https://github.com/Azure-Samples/active-directory-b2c-xamarin-native).
 
 To make it easier for you, to use MSAL in a Azure AD B2C scenario, the sample in this repository collects the MSAL app configuration that you need one file: `msalconfig.json`. This file will be missing when you first open the sample. Instead rename the file `msalconfig.tutorial.json` to `msalconfig.json` and insert the correct values. When you've renamed `msalconfig.tutorial.json` to `msalconfig.json` and have inserted the right values, `msalconfig.json` will end up looking something like this:
 
