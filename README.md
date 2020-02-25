@@ -114,7 +114,8 @@ To configure this:
 7. Click **Add a permission**,
 8. Pick **My APIs.** and stay within **Delegated Permissions**
 9. Click on the name of your application
-10. Check the chack boxes of the three Permission you've just created. You might need to expand the them to click all the check boxes.
+10. Check the check boxes of the three Permission you've just created. You might need to expand the them to click all the check boxes.
+11. Click **Add Permissions**
 
 That's it. Azure AD B2C is now configured.
 
