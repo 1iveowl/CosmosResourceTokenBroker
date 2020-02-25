@@ -20,7 +20,7 @@ Early on in the development process, I made a [blue pill discision](https://en.w
 
 Fast forward a few months and things didn't turn out quite as expected. Instead of graduating AppCenter Auth and AppCenter Data, from preview to a final release, [Microsoft announced in February 2020 that both would be retired before completion](https://devblogs.microsoft.com/appcenter/app-center-mbaas-retirement/). In other words, I would now soon run out of blue pills. 
 
-Such is the world of software i suppose, and choosing to rely on preview versions, came with a risk, although I really hadn't given it much thought. It stung a bit, but my project started out as a hobby project and an opportunity to learn, so well. 
+Such is the world of software, I suppose, and choosing to rely on preview versions obviously come with it's own set of risks, although I really hadn't given it much thought. It stung a bit, but my project started out as a hobby project and an opportunity to learn, so well. 
 
 Anyhow, there's certainly good to be said about red pills too. Hence, I decided plunged myself deeper into the underlying technologies that have been supporting AppCenter Auth and Data from the beginning - i.e: 
 - [Azure AD B2C](https://docs.microsoft.com/en-us/azure/active-directory-b2c/overview).
