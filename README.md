@@ -163,9 +163,12 @@ When running your Azure Function in your emulator on your local developer machin
 }
 ```
 *Note: In case you are wondering, the key etc. provided above are all fake.*
-### Integrate the Azure Function with Azure AD B2C
+
+### Configuring Azure Function for production
 
 When you publish your Azure Function to production, you must configure these same settings that you've are spedifying in `local.settings.json` , but by using [Azure Function Application Settings](https://medium.com/awesome-azure/azure-reading-application-settings-in-azure-functions-asp-net-core-1dea56cf67cf). As you do this, I strongly advice that you place your secrets (i.e. your Cosmos Primiary or Secondary Key) in the an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/). There's a great step-by-step guide for how this do this here: [Create Azure Key Vault and Azure Function App](https://daniel-krzyczkowski.github.io/Integrate-Key-Vault-Secrets-With-Azure-Functions/).
+
+### Integrate the Azure Function with Azure AD B2C
 
 You will also need to integrate Azure Functions with Azure AD B2C. This way Azure Functions will *auto-magically* take care of the authentication of the user for you. There's a great step-by-step guide for configuring an Azure Function for integration with Azure AD B2C here: [Secure Azure Functions Using Azure AD B2C](https://medium.com/@ravindraa/secure-azure-functions-using-azure-ad-b2c-986e4ad07c6c). 
 
