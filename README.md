@@ -111,11 +111,15 @@ To configure this:
    3.  `user.readwrite`
    4.  `shared.readonly`
 6. Now navigate to the **API Permission** in the menu.
-7. Click **Add a permission**,
-8. Pick **My APIs.** and stay within **Delegated Permissions**
-9. Click on the name of your application
+7. Click **Add a permission**.
+8. Pick **My APIs.** and stay within **Delegated Permissions**.
+9. Click on the name of your application.
 10. Check the check boxes of the three Permission you've just created. You might need to expand the them to click all the check boxes.
-11. Click **Add Permissions**
+11. Click **Add Permissions**.
+12. Back on the main API Permissions page click **Grant admin consent for [your app name]**.
+13. Choose **Yes, add other granted permissions to configured permissions**.
+14. Click **Save and continue**.
+15. Click **Grant admin consent**.
 
 That's it. Azure AD B2C is now configured.
 
