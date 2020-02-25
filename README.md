@@ -1,10 +1,10 @@
 # Cosmos Resource Token Broker - Guide and Library
 
-<!-- [![NuGet Badge](https://buildstats.info/nuget/ResourceTokenBroker.Cosmos)](https://www.nuget.org/packages/ResourceTokenBroker.Cosmos/)
-
-[![NuGet Badge](https://buildstats.info/nuget/ResourceTokenClient.Cosmos)](https://www.nuget.org/packages/ResourceTokenClient.Cosmos/)
-
-[![NuGet Badge](https://buildstats.info/nuget/B2CAuth.Xamarin)](https://www.nuget.org/packages/B2CAuth.Xamarin/) -->
+|  NuGets |Version/Downloads   |
+|---|---|
+|  Resource Token Broker for Azure Cosmos DB | [![NuGet Badge](https://buildstats.info/nuget/ResourceTokenBroker.Cosmos)](https://www.nuget.org/packages/ResourceTokenBroker.Cosmos/)  |
+|  Resource Token Client for Azure Cosmos DB | [![NuGet Badge](https://buildstats.info/nuget/ResourceTokenClient.Cosmos)](https://www.nuget.org/packages/ResourceTokenClient.Cosmos/) |
+|  B2C Auth Client for Xamarin | [![NuGet Badge](https://buildstats.info/nuget/B2CAuth.Xamarin)](https://www.nuget.org/packages/B2CAuth.Xamarin/)  |
 
 
 ***Please star this repository if you find it useful. Thank you!***
