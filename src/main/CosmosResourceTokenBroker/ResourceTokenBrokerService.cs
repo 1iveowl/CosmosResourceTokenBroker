@@ -220,54 +220,6 @@ namespace CosmosResourceTokenBroker
             }
         }
 
-        //private async Task<IResourcePermission> CreateNewPermission(
-        //    User user,
-        //    string userId,
-        //    string permissionId,
-        //    IPermissionScope permissionScope,
-        //    CancellationToken ct)
-        //{
-        //    try
-        //    {
-        //        var container = _database.GetContainer(_collectionId);
-
-        //        var partitionKeyValue = userId.ToPartitionKeyBy(permissionScope.PermissionMode);
-
-        //        var partitionKey = new PartitionKey(partitionKeyValue);
-                
-        //        var permissionProperties = new PermissionProperties(
-        //            permissionId,
-        //            permissionScope.PermissionMode.ToCosmosPermissionMode(),
-        //            container,
-        //            partitionKey);
-
-        //        var expiresUtc = DateTime.UtcNow + _resourceTokenTtl;
-
-        //        var permissionResponse = await user.CreatePermissionAsync(
-        //            permissionProperties,
-        //            Convert.ToInt32(_resourceTokenTtl.TotalSeconds),
-        //            cancellationToken: ct);
-
-        //        if (permissionResponse?.StatusCode != HttpStatusCode.OK 
-        //            || string.IsNullOrEmpty(permissionResponse?.Resource?.Token) 
-        //            || string.IsNullOrEmpty(permissionResponse?.Resource?.Id))
-        //        {
-        //            throw new ResourceTokenBrokerServiceException($"Unable to create new permission for user. Token or Id is missing or invalid. Status code: {permissionResponse?.StatusCode}");
-        //        }
-
-        //        return new ResourcePermission(
-        //            permissionScope,
-        //            permissionResponse.Resource.Token,
-        //            permissionResponse.Resource.Id,
-        //            partitionKeyValue,
-        //            expiresUtc);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new ResourceTokenBrokerServiceException($"Unable to create new permission for user. Unhandled exception: {ex}");
-        //    }
-        //}
-
         private async Task<IResourcePermission> UpsertPermission(
             User user,
             string userId,
@@ -277,8 +229,6 @@ namespace CosmosResourceTokenBroker
         {
             try
             {
-                //var container = _database.GetContainer(_collectionId);
-
                 var partitionKeyValue = userId.ToPartitionKeyBy(permissionScope.PermissionMode);
 
                 var partitionKey = new PartitionKey(partitionKeyValue);
@@ -296,19 +246,22 @@ namespace CosmosResourceTokenBroker
                     Convert.ToInt32(_resourceTokenTtl.TotalSeconds),
                     cancellationToken: ct);
 
-                if (permissionResponse?.StatusCode != HttpStatusCode.OK
-                    || string.IsNullOrEmpty(permissionResponse?.Resource?.Token)
-                    || string.IsNullOrEmpty(permissionResponse?.Resource?.Id))
+                if (permissionResponse?.StatusCode == HttpStatusCode.OK
+                    || permissionResponse?.StatusCode == HttpStatusCode.Created)
                 {
-                    throw new ResourceTokenBrokerServiceException($"Unable to upsert new permission for user. Token or Id is missing or invalid. Status code: {permissionResponse?.StatusCode}");
+                    if (!string.IsNullOrEmpty(permissionResponse?.Resource?.Token)
+                        && !string.IsNullOrEmpty(permissionResponse?.Resource?.Id))
+                    {
+                        return new ResourcePermission(
+                            permissionScope,
+                            permissionResponse.Resource.Token,
+                            permissionResponse.Resource.Id,
+                            partitionKeyValue,
+                            expiresUtc);
+                    }
                 }
 
-                return new ResourcePermission(
-                    permissionScope,
-                    permissionResponse.Resource.Token,
-                    permissionResponse.Resource.Id,
-                    partitionKeyValue,
-                    expiresUtc);
+                throw new ResourceTokenBrokerServiceException($"Unable to upsert permission for user. Token or Id is missing or invalid. Status code: {permissionResponse?.StatusCode}");
             }
             catch (Exception ex)
             {
