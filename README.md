@@ -116,12 +116,12 @@ To configure this:
 9. Click on the name of your application.
 10. Check the check boxes of the three Permission you've just created. You might need to expand the them to click all the check boxes.
 11. Click **Add Permissions**.
-12. Back on the main API Permissions page click **Grant admin consent for [your app name]**.
+12. Back on the main API Permissions page click **Grant admin consent for [*name of your application*]**.
 13. Choose **Yes, add other granted permissions to configured permissions**.
 14. Click **Save and continue**.
 15. Click **Grant admin consent**.
 
-That's it. Azure AD B2C is now configured with the new scopes and permissions, which will now be part of the access token granted by Azure AD B2C for authenticated users.
+That's it. Azure AD B2C is now configured with the new scopes and permissions, which will now be part of the access token granted by Azure AD B2C for authenticated users. Please check that the `Status` for the scopes is now **Granted for [*name of your application*]**.
 
 ## Step 2: Implementing the Resource Token Broker
 
