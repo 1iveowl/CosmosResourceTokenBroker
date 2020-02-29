@@ -321,6 +321,27 @@ public interface IUserContext
 }
 ```
 
+### Hint
+
+I ran into a strange issue when trying to build my Xamarin Forms project for Android, getting the error:
+
+
+    Can not resolve reference: `Microsoft.Azure.Cosmos.Direct`, referenced by `Microsoft.Azure.Cosmos.Client`. 
+    Please add a NuGet package or assembly reference for `Microsoft.Azure.Cosmos.Direct`, 
+    or remove the reference to `Microsoft.Azure.Cosmos.Client`...
+
+This seem to be a [known issue](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/624#issuecomment-541863708). To work around it there seems to be two solutions. 
+
+The first solution is to add this to your `csproj` for the shared Xamarin Forms .NET Standard project:
+
+```xml
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+```
+
+The secord, and maybe easier solution, is to reference the `ResourceTokenClient.Cosmos` project from the Xamarin Forms Android project.
+
 ## Step 4: Program your app to store data with Cosmos DB
 
 Used with this step:

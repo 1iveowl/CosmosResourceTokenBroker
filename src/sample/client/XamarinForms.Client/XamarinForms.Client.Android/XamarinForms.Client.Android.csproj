@@ -57,13 +57,18 @@
       <Version>3.6.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client">
-      <Version>4.8.2</Version>
+      <Version>4.8.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
+      <Version>4.3.0.0</Version>
+      <ExcludeAssets>All</ExcludeAssets>
+      <IncludeAssets>none</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Plugin.CurrentActivity">
       <Version>2.1.0.4</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.4.0.991640" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.4.0" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.356" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidParentWindowLocatorService.cs" />
@@ -99,6 +104,10 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\main\CosmosResourceTokenClient\CosmosResourceTokenClient.csproj">
+      <Project>{798dc5e7-785d-4811-90c3-e62c8f2594ef}</Project>
+      <Name>CosmosResourceTokenClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XamarinForms.Client\XamarinForms.Client.csproj">
       <Project>{59BB2EDA-BD76-4490-AEF0-B66AC7B5068A}</Project>
       <Name>XamarinForms.Client</Name>

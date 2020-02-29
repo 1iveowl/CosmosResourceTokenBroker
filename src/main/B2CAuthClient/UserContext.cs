@@ -30,11 +30,16 @@ namespace B2CAuthClient
 
         internal UserContext()
         {
-
+            IsLoggedOn = false;
         }
 
         internal UserContext(IUserContext userContext, bool isLoggedOn)
         {
+            if (userContext is null)
+            {
+                return;
+            }
+
             IsLoggedOn = isLoggedOn;
             Name = userContext.Name;
             UserIdentifier = userContext.UserIdentifier;

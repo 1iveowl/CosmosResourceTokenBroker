@@ -71,9 +71,14 @@ namespace B2CAuthClient
         {
             var account = await GetAccount();
 
+            if (account is null)
+            {
+                return;
+            }
+
             await _pca.RemoveAsync(account);
 
-            CurrentUserContext = new UserContext(CurrentUserContext, false);
+            CurrentUserContext = new UserContext();
 
         }
 
