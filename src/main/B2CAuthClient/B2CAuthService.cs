@@ -106,11 +106,28 @@ namespace B2CAuthClient
 
         private async Task<IUserContext> SignInInteractively(IAccount account, CancellationToken ct)
         {
-            var authResult = await _pca.AcquireTokenInteractive(_defaultScopes)
-                .WithAccount(account)
-                .ExecuteAsync(ct);
+            try
+            {
+                AuthenticationResult authResult;
 
-            return new UserContext(authResult);
+                if (account is null)
+                {
+                    authResult = await _pca.AcquireTokenInteractive(_defaultScopes)
+                        .ExecuteAsync(ct);
+                }
+                else
+                {
+                    authResult = await _pca.AcquireTokenInteractive(_defaultScopes)
+                        .WithAccount(account)
+                        .ExecuteAsync(ct);
+                }
+            
+                return new UserContext(authResult);
+            }
+            catch (Exception ex)
+            {
+                throw new B2CAuthClientException($"Unable to acquire token interactive. Unhandled exception: {ex}");
+            }
         }
 
         private async Task<IAccount> GetAccount()
