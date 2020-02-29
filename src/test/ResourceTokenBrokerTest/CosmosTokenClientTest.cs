@@ -8,6 +8,7 @@ using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceTokenClient;
 using CosmosResourceTokenClient.Model;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ResourceTokenBrokerTest.Model;
 using ResourceTokenBrokerTest.Service;
@@ -143,7 +144,9 @@ namespace ResourceTokenBrokerTest
 
             await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
 
-            var documents = await cosmosTokenClient.GetList<Person>(defaultPartition);
+            var documents = await cosmosTokenClient.GetPartitionDocuments(defaultPartition);
+
+            //var json = JsonConvert.SerializeObject(documents);
 
             Assert.True( documents.Count() >= numberOfDocuments);
         }

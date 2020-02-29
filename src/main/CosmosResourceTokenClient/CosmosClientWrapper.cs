@@ -145,7 +145,7 @@ namespace CosmosResourceTokenClient
             }
         }
         
-        internal async Task<IEnumerable<T>> GetList(CancellationToken ct)
+        internal async Task<IEnumerable<object>> GetPartitionDocuments(CancellationToken ct)
         {
             try
             {
@@ -155,11 +155,11 @@ namespace CosmosResourceTokenClient
                 };
 
                 var setIterator = _container
-                    .GetItemLinqQueryable<CosmosItem<T>>(true, requestOptions: queryRequestOption)
+                    .GetItemLinqQueryable<CosmosItem<object>>(true, requestOptions: queryRequestOption)
                     .ToFeedIterator();
 
-                var itemList = new List<T>();
-
+                var itemList = new List<object>();
+                
                 while (setIterator.HasMoreResults)
                 {
                     foreach (var cosmosItem in await setIterator.ReadNextAsync(cancellationToken:ct).ConfigureAwait(false))

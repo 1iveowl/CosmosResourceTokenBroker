@@ -75,16 +75,16 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
-        public async Task<IEnumerable<T>> GetList<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+        public async Task<IEnumerable<object>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
 
-                await using var cosmosClientEx = new CosmosClientWrapper<T>(resourcePermissionResponse, permissionMode);
+                await using var cosmosClientEx = new CosmosClientWrapper<object>(resourcePermissionResponse, permissionMode);
 
-                return await cosmosClientEx.GetList(cancellationToken);
+                return await cosmosClientEx.GetPartitionDocuments(cancellationToken);
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
