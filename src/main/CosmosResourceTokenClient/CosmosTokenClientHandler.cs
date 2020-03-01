@@ -29,17 +29,22 @@ namespace CosmosResourceTokenClient
 
         internal async Task Execute(Func<IResourcePermissionResponse, Task> cosmosfunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
-            await Execute(async resourcePermissionResponse =>
-            {
-                await cosmosfunc(resourcePermissionResponse);
-                return true;
-            }, permissionMode, ct);
+            var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
+
+            await cosmosfunc(resourcePermissionResponse);
         }
 
         internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosfunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
+            var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
+
+            return await cosmosfunc(resourcePermissionResponse);
+        }
+
+        private async Task<IResourcePermissionResponse> GetResourcePermissionResponse(PermissionModeKind permissionMode, CancellationToken ct)
+        {
             await ValidateLoginState();
-            
+
             var resourcePermissionResponse = await AcquireResourceToken(_authService.CurrentUserContext, ct);
 
             var resourceToken = resourcePermissionResponse?.ResourcePermissions?
@@ -70,8 +75,8 @@ namespace CosmosResourceTokenClient
             {
                 throw new CosmosClientException($"No or invalid database Id received from broker: {collectionId}");
             }
-            
-            return await cosmosfunc(resourcePermissionResponse);
+
+            return resourcePermissionResponse;
         }
 
         private async Task<IResourcePermissionResponse> AcquireResourceToken(IUserContext userContext, CancellationToken ct)

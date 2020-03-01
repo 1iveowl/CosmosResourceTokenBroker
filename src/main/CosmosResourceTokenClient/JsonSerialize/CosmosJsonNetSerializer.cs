@@ -1,11 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
+
 namespace CosmosResourceTokenClient.JsonSerialize
 {
     // https://stackoverflow.com/a/57066220/4140832
+    [Preserve(AllMembers = true)]
     public class CosmosJsonNetSerializer : CosmosSerializer
     {
         private readonly Encoding _defaultEncoding;
@@ -13,8 +16,9 @@ namespace CosmosResourceTokenClient.JsonSerialize
         private readonly JsonSerializer _serializer;
 
 
-        public CosmosJsonNetSerializer() : this(new JsonSerializerSettings())
+        public CosmosJsonNetSerializer() //: this(new JsonSerializerSettings())
         {
+            throw new Exception("Must be constructed with serializer settings");
         }
 
         public CosmosJsonNetSerializer(JsonSerializerSettings serializerSettings)

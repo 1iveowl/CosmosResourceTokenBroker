@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceTokenClient;
-using CosmosResourceTokenClient.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ResourceTokenBrokerTest.Model;
 using ResourceTokenBrokerTest.Service;
 using Xunit;
 using Xunit.Extensions.Ordering;
+using Person = ResourceTokenBrokerTest.Model.Person;
 
 namespace ResourceTokenBrokerTest
 {
-    public class CosmosTokenClientTest
+    public class CosmosTokenClientTypedTest
     {
         // Use this switch to swap between using local emulator and Azure Function in the cloud.
         private const bool IsAzureFunctionLocalEmulator = false;
@@ -29,13 +29,13 @@ namespace ResourceTokenBrokerTest
         private readonly string _resourceTokenBrokerUrl;
         private readonly string _resourceTokenBrokerUrlLocalHost;
         
-        public CosmosTokenClientTest()
+        public CosmosTokenClientTypedTest()
         {
             const string defaultNameSpace = "ResourceTokenBrokerTest";
 
             _randomGuid = Guid.NewGuid().ToString();
 
-            var assembly = typeof(CosmosTokenClientTest).GetTypeInfo().Assembly;
+            var assembly = typeof(CosmosTokenClientTypedTest).GetTypeInfo().Assembly;
 
             var fileStream = assembly.GetManifestResourceStream($"{defaultNameSpace}.test.config.json");
 
@@ -146,8 +146,6 @@ namespace ResourceTokenBrokerTest
 
             var documents = await cosmosTokenClient.GetPartitionDocuments(defaultPartition);
 
-            //var json = JsonConvert.SerializeObject(documents);
-
             Assert.True( documents.Count() >= numberOfDocuments);
         }
 
@@ -173,7 +171,7 @@ namespace ResourceTokenBrokerTest
 
             try
             {
-                await cosmosTokenClient.Delete<Person>(documentId, defaultPartition);
+                await cosmosTokenClient.Delete(documentId, defaultPartition);
                 Assert.True(result);
                 return;
             }

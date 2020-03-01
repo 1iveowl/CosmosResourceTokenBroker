@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace CosmosResourceToken.Core.Client
 {
+    [Preserve(AllMembers = true)]
     public interface ICacheSingleObjectByKey
     {
         Task<T> TryGetFromCache<T>(

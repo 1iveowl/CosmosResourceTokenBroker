@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceToken.Core.Client
 {
@@ -14,8 +13,8 @@ namespace CosmosResourceToken.Core.Client
 
         Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
 
-        Task Delete<T>(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
+        Task Delete(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<object>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
+        Task<IEnumerable<string>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
     }
 }

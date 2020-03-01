@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 
 namespace CosmosResourceTokenClient
 {
+    [Preserve(AllMembers = true)]
     internal class ResourceTokenBrokerClientService : IAsyncDisposable 
     {
         private readonly HttpClient _httpClient;
@@ -61,7 +62,7 @@ namespace CosmosResourceTokenClient
                     var serializer = new JsonSerializer {TypeNameHandling = TypeNameHandling.Auto};
 
 
-                    using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+                    using var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync());
 
                     using var jsonReader = new JsonTextReader(streamReader);
                     
