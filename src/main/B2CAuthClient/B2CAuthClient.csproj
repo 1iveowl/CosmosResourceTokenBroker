@@ -9,8 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client" Version="4.8.2" />
 
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
-      <Version>4.3.0.0</Version>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.7">
       <ExcludeAssets>All</ExcludeAssets>
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>

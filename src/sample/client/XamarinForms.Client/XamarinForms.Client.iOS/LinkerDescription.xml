@@ -1,0 +1,9 @@
+﻿<!--<?xml version="1.0" encoding="UTF-8" ?>
+<linker>
+        <assembly fullname="Microsoft.Azure.Cosmos.Client">
+            <type fullname="Microsoft.Azure.Cosmos.Headers"></type>
+            <type fullname="Microsoft.Azure.Cosmos.AccountConsistency"></type>
+            <type fullname="Microsoft.Azure.Cosmos.AccountProperties"></type>
+            <type fullname="Microsoft.Azure.Cosmos.AccountRegion"></type>        
+        </assembly>
+</linker>-->

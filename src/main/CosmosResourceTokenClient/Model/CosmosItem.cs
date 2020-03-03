@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -68,10 +69,14 @@ namespace CosmosResourceTokenClient.Model
 
         public virtual async Task<ICosmosItem<T>> GetObjectFromStream(Stream stream, CancellationToken ct = default)
         {
-            // Using System.Text.Json here to utilize the Async Deserializer with Streams.
-            var item = await System.Text.Json.JsonSerializer.DeserializeAsync<CosmosItem<T>>(stream, cancellationToken: ct);
+            var serializer = new JsonSerializer();
 
-            return item;
+            using var sr = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(sr);
+
+            await Task.CompletedTask;
+
+            return serializer.Deserialize<CosmosItem<T>>(jsonReader);
         }
 
         public virtual async Task<IEnumerable<string>> GetJsonStringsFromStream(Stream stream, CancellationToken ct = default)
