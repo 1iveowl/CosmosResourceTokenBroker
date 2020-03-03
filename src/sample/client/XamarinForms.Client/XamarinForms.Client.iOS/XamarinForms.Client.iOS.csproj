@@ -59,7 +59,7 @@
     <CodesignResourceRules />
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <CodesignProvision>VS: WildCard Development</CodesignProvision>
-    <MtouchExtraArgs>--nolinkaway --linkskip=Microsoft.Azure.Cosmos.Client --linkskip=Newtonsoft.Json --linkskip=Microsoft.Azure.Cosmos.Serialization.HybridRow --linkskip=Microsoft.Azure.Cosmos.Client --linkskip=Microsoft.Azure.Cosmos.Direct --linkskip=System.Configuration.ConfigurationManager -v -v -v -v</MtouchExtraArgs>
+    <MtouchExtraArgs>--nolinkaway  -v -v -v -v</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -78,7 +78,6 @@
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="LinkerDescription.xml" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
@@ -135,7 +134,7 @@
   </ItemGroup>
   <ItemGroup>
 
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.6.0" />
+    <!-- <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.6.0" /> -->
 
     <!-- <PackageReference Include="Microsoft.Azure.Cosmos.Direct" Version="3.4.2" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" />
@@ -156,6 +155,9 @@
       <Project>{068CE5CC-C695-449A-9786-2F71135C91D0}</Project>
       <Name>XamarinForms.Client</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <LinkDescription Include="LinkerDescription.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
