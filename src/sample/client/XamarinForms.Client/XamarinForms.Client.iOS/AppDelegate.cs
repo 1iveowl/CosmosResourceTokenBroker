@@ -26,6 +26,8 @@ namespace XamarinForms.Client.iOS
             global::Xamarin.Forms.Forms.Init();
             LoadApplication(new App());
 
+            var ignore1 = typeof(Microsoft.Azure.Cosmos.AccountProperties);
+
             return base.FinishedLaunching(app, options);
         }
 
