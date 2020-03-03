@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceToken.Core.Model;
 using CosmosResourceTokenClient.Model;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Fluent;
-using Newtonsoft.Json.Linq;
 
 namespace CosmosResourceTokenClient
 {
