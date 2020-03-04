@@ -6,7 +6,6 @@
 | [![NuGet Badge](https://buildstats.info/nuget/ResourceTokenClient.Cosmos)](https://www.nuget.org/packages/ResourceTokenClient.Cosmos/) | Resource Token Client for Azure Cosmos DB |
 | [![NuGet Badge](https://buildstats.info/nuget/B2CAuth.Xamarin)](https://www.nuget.org/packages/B2CAuth.Xamarin/) | B2C Auth Client for Xamarin |
 
-
 ***Please star this repository if you find it useful. Thank you!***
 
 ## Why this repository?
@@ -321,25 +320,6 @@ public interface IUserContext
 }
 ```
 
-### Hint
-
-I ran into a strange issue when trying to build my Xamarin Forms project for Android, getting the error:
-
-
-    Can not resolve reference: `Microsoft.Azure.Cosmos.Direct`, referenced by `Microsoft.Azure.Cosmos.Client`. 
-    Please add a NuGet package or assembly reference for `Microsoft.Azure.Cosmos.Direct`, 
-    or remove the reference to `Microsoft.Azure.Cosmos.Client`...
-
-This seem to be a [known issue](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/624#issuecomment-541863708). To work around it there seems to be two solutions. 
-
-The first solution is to add this to your `csproj` for the shared Xamarin Forms .NET Standard project:
-
-```xml
-  <PropertyGroup>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
-```
-
 The secord, and maybe easier solution, is to reference the `ResourceTokenClient.Cosmos` project from the Xamarin Forms Android project.
 
 ## Step 4: Program your app to store data with Cosmos DB
@@ -354,19 +334,26 @@ If your are migrating, then this is the step where you replace AppCenter Data wi
 
 By now your Resource Token Broker and your Xamarin Forms app should be all configured.
 
-To start reading and writing to Cosmos DB all you need to do is to instantiate the Cosmos Token Client, like this:
+Reading and writing to Cosmos DB is straight forward with the Cosmos Token Client.
+
+### Instantiation
+First you instantiate the `CosmosTokenClient`:
 
 ```csharp
 ICosmosTokenClient cosmosTokenClient = new CosmosTokenClient(authService, resourceBrokerUrl);
 ```
 
-`CosmosTokenClient` uses Dependency Injection. Hence, if you don't like, or for some reason can't use, the `B2CAuthService` provided in this repository, then you can still continue use the `CosmosTokenClient`. All you would need to do, in this case, would be to implement the simple `IB2CAuthService` interface and passed your own version of the B2CAuthService as the first parameter in the `CosmosTokenClient` constructor.
+`CosmosTokenClient` uses Dependency Injection. Hence, if you don't like, or for some reason can't use, the `B2CAuthService` provided in this repository, then you can still continue use the `CosmosTokenClient`. All you would need to do, in this case, is to implement the simple `IB2CAuthService` interface and pass your own version of the B2CAuthService as the first parameter in the `CosmosTokenClient` constructor.
 
-At runtime, the `CosmosTokenClient` will try to acquire the UserContext and specifically the Access Token from the `B2CAuthService`. If the user is not already logged in (i.e. CurrentUserContext is null), the `CosmosTokenClient` will try to acquire the User Context **silently**, from the MSAL Client cache - i.e. it will do so without presenting the user with the option to log in. If it's not possible for `CosmosTokenClient` to acquire the User Context, then it will throw a: `CosmosClientAuthenticationException`. In other words, the approach chosen here, is that it is best to leave it entirely up to the app developer, to define and handle the logic for when and how to present the user with an interactive login.
+At runtime, the `CosmosTokenClient` will try to acquire the UserContext and specifically the Access Token, needed for authentication to the Resource Token Broker, from `B2CAuthService`. 
+
+If the user is not already logged in (i.e. CurrentUserContext is null), then the `CosmosTokenClient` will try to acquire the User Context ***silently***, from the MSAL Client cache. ***Silently*** means that it will do so without presenting the user with the option to log in. If it's not possible for `CosmosTokenClient` to acquire the User Context (e.g. if the user have not login before), then `CosmosTokenClient` will throw a: `CosmosClientAuthenticationException`. The logic behind this behavior is that it is best to leave it entirely up to the app developer to define and handle the logic for when and how to present the user with an interactive login.
 
 Also, note that `CosmosTokenClient` has a third and optional parameter that is accepted by it's constructor. This parameter accepts an instance of a class with the `ICacheSingleObjectByKey` interface. It is strongly adviced that you utilize this for none-test implementations, as it allows the CosmosTokenClient to cache permission requests. 
 
 There's a quick and dirty, yet fully functional, implementation of this caching interface included as part of the Xamarin Forms sample. You'll find it [here](https://github.com/1iveowl/CosmosResourceTokenBroker/blob/master/src/sample/client/XamarinForms.Client/XamarinForms.Client/Cache/QuickAndDirtyCache.cs).
+
+### Using the `CosmosTokenClient`
 
 The `CosmosTokenClient` is very similar to [AppCenter Data](https://docs.microsoft.com/en-us/appcenter/sdk/data/xamarin). This is no coincidence, as this approach provides for an easy migration.
 
@@ -390,6 +377,49 @@ Similary, the CosmosTokenClient uses the `DefaultPartitionKind` enum with these 
 - Shared 
 
 There's no `WriteOption` etc. available for CosmosTokenClient, as caching is out of scope (See comments in step 5 below). 
+
+### iOS specific build guidelines
+
+You are almost ready to build your project now, but not quite. The `CosmosTokenClient`is based on the [Azure Cosmos SDK v3](https://github.com/Azure/azure-cosmos-dotnet-v3) and to use it with Xamarin iOS you need to make sure that the compiler is configured correctly. 
+
+First of, at the time of writing Cosmos SDK v3.6.0 does not support the The [Mono Interpreter](https://devblogs.microsoft.com/xamarin/introducing-xamarin-ios-interpreter/), which was introduced recently. For more details and latest update [see here](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1236).
+
+Secondly, if you're releasing a Xamarin iOS project for Apple App Store chances are that you'll probably want to use the Linker in the `Link All` configuration.
+
+Unfortunately, as of version 3.6.0, `Microsoft.Azure.Cosmos` is not [Linker ready/friendly](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1243), however it is possible to make it work.
+
+The best approach to  create a [Linker Description](https://docs.microsoft.com/en-us/xamarin/cross-platform/deploy-test/linker) file, like this:
+
+```xml
+<linker>
+       <assembly fullname="Microsoft.Azure.Cosmos.Client"></assembly>
+       <assembly fullname="Microsoft.Azure.Cosmos.Direct"></assembly>
+       <assembly fullname="Newtonsoft.Json"></assembly>
+       <assembly fullname="Microsoft.Azure.Cosmos.Serialization.HybridRow"></assembly>
+       <assembly fullname="System.Configuration.ConfigurationManager"></assembly>
+</linker>
+```
+
+Place the file in the root of your iOS project and set the *Build Action* of the file to `Link Description`.
+
+You also need to specify this [*Additional mtouch argument](https://docs.microsoft.com/en-us/xamarin/ios/deploy-test/linker?tabs=macos#skipping-assemblies): `--nolinkaway`.
+
+
+### Android specific build guidelines 
+
+Like with the iOS there are some extra steps you need to take to make version 3.6.0 of `Microsoft.Azure.Cosmos` work for you. 
+
+Firstly, you need to provide the same guidance for the android compiler by providing a [Linker Description](https://docs.microsoft.com/en-us/xamarin/cross-platform/deploy-test/linker) file. It is the exact same file as with iOS above. And just as with iOS you can place it in the root of your Xamarin Android project, and mark the file *Build Action* for `Link Description`.
+
+Secondly, you must help the Xamarin Android project to get hold of a couple of assemblies that should come with `Microsoft.Azure.Cosmos` but are for some reason missing. The easies way to do this is to add this to your `.csproj` for the Android project: 
+
+```xml
+    <PackageReference Include="Microsoft.Azure.Cosmos.Direct" Version="3.4.2" />
+    <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+```
+
+### Wrapping up
 
 That's it. You've made it this far. And while there's certainly a lot of moving parts and settings that need to align with the moon and the stares before getting here. As you arrive, I hope that you'll find that reading and writing documents to Cosmos DB using the Resource Token Broker, is now pretty straight forward going forward.
 c
