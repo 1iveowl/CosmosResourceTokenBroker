@@ -20,7 +20,7 @@ Refactored to use the Stream API for speed and flexibility
     <dependencies>
     
       <group targetFramework="netstandard2.1">
-          <dependency id="Microsoft.Azure.Cosmos" version="3.6.0"/>
+          <dependency id="Microsoft.Azure.Cosmos" version="3.5.1"/>
           <dependency id="Microsoft.AspNetCore.Mvc.Abstractions" version="2.2.0"/>
           <dependency id="Newtonsoft.Json" version="12.0.3"/>
           <dependency id="System.Text.Json" version="4.7.1"/>

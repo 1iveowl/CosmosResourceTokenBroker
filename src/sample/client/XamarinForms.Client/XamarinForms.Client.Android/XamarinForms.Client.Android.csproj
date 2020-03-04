@@ -65,11 +65,9 @@
     </PackageReference>
     <PackageReference Include="Xamarin.Forms" Version="4.5.0.356" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.0" />
-
     <PackageReference Include="Microsoft.Azure.Cosmos.Direct" Version="3.4.2" />
-    <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" />
+    <!-- <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" /> -->
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
-
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidParentWindowLocatorService.cs" />
@@ -108,6 +106,10 @@
     <ProjectReference Include="..\..\..\..\main\CosmosResourceTokenClient\CosmosResourceTokenClient.csproj">
       <Project>{798dc5e7-785d-4811-90c3-e62c8f2594ef}</Project>
       <Name>CosmosResourceTokenClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dummy4Android\Dummy4Android.csproj">
+      <Project>{eee623a7-028d-4260-a6ab-a1890e90b03c}</Project>
+      <Name>Dummy4Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\XamarinForms.Client\XamarinForms.Client.csproj">
       <Project>{068CE5CC-C695-449A-9786-2F71135C91D0}</Project>

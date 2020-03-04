@@ -414,10 +414,34 @@ Firstly, you need to provide the same guidance for the android compiler by provi
 Secondly, you must help the Xamarin Android project to get hold of a couple of assemblies that should come with `Microsoft.Azure.Cosmos` but are for some reason missing. The easies way to do this is to add this to your `.csproj` for the Android project: 
 
 ```xml
-    <PackageReference Include="Microsoft.Azure.Cosmos.Direct" Version="3.4.2" />
-    <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" />
+    <PackageReference Include="Microsoft.Azure.Cosmos.Direct" Version="3.4.2" />    
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos.Serialization.HybridRow" Version="1.0.0-preview" />
 ```
+
+That's it, except that it isn't because at the moment `Microsoft.Azure.Cosmos.Serialization.HybridRow` is nowhere to be found in [NuGet.org](https://nuget.org)!? This means that you need to either extract the .dll from  `Microsoft.Azure.Cosmos` and add it to your project, or you can do, what I did, which was to create a *dymmy project* in your solution and reference this project from your Xamarin Android project. In this *dummy project* you add the `Microsoft.Azure.Cosmos` v.3.6.0 package and then you add `CopyLocalLockFileAssemblies` and set it to `true`. In total the `.csprooj`of your *dymmy project will end up looking like this: 
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.6.0" />
+  </ItemGroup>
+
+</Project>
+```
+
+The above ensure that the entire assembly content of `Microsoft.Azure.Cosmos` is copied to packages that reference it. There more about this approach [here](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/624).
+
+I know. It feels hacky. But it must work for now. Let's hope, some time in the future, that `Microsoft.Azure.Cosmos` will evolve and become more friendly and tested for use in Xamarin Forms scenarios. 
 
 ### Wrapping up
 
