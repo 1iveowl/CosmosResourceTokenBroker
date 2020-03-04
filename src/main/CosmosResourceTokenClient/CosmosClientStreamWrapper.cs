@@ -112,6 +112,7 @@ namespace CosmosResourceTokenClient
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"{ex}");
                 throw new CosmosClientException($"Unable to read: {id} to Stream", ex);
             }
 
