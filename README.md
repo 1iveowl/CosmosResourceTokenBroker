@@ -388,7 +388,7 @@ Secondly, if you're releasing a Xamarin iOS project for Apple App Store chances 
 
 Unfortunately, as of version 3.6.0, `Microsoft.Azure.Cosmos` is not [Linker ready/friendly](https://github.com/Azure/azure-cosmos-dotnet-v3/issues/1243), however it is possible to make it work.
 
-The best approach to  create a [Linker Description](https://docs.microsoft.com/en-us/xamarin/cross-platform/deploy-test/linker) file, like this:
+The best approach is to create a [Linker Description](https://docs.microsoft.com/en-us/xamarin/cross-platform/deploy-test/linker) file, like this:
 
 ```xml
 <linker>
