@@ -421,7 +421,7 @@ Secondly, you must help the Xamarin Android project to get hold of a couple of a
 
 ### Wrapping up
 
-That's it. You've made it this far. And while there's certainly a lot of moving parts and settings that need to align with the moon and the stares before getting here. As you arrive, I hope that you'll find that reading and writing documents to Cosmos DB using the Resource Token Broker, is now pretty straight forward going forward.
+That's it. You've made it this far. And while there's certainly a lot of moving parts and settings that need to align with the moon and the stares before getting here, as you arrive, I hope that you'll find that reading and writing documents to Cosmos DB using the Resource Token Broker, is now pretty straight forward going forward.
 c
 ## Step 5 (optional): Caching
 
