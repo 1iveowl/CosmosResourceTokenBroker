@@ -15,6 +15,8 @@ namespace CosmosResourceToken.Core.Client
 
         Task Delete(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
 
+        Task<IEnumerable<T>> List<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
+
         Task<IEnumerable<string>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default);
     }
 }

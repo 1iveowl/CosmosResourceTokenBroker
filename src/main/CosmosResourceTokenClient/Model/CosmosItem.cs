@@ -66,7 +66,7 @@ namespace CosmosResourceTokenClient.Model
             return _memoryStream;
         }
 
-        public virtual async Task<ICosmosItem<T>> GetObjectFromStream(Stream stream, CancellationToken ct = default)
+        public virtual async Task<ICosmosItem<T>> GetItemFromStream(Stream stream, CancellationToken ct = default)
         {
             var serializer = new JsonSerializer();
 
@@ -76,6 +76,33 @@ namespace CosmosResourceTokenClient.Model
             await Task.CompletedTask;
 
             return serializer.Deserialize<CosmosItem<T>>(jsonReader);
+        }
+
+        public async Task<IEnumerable<ICosmosItem<T>>> GetItemsFromStream(Stream stream, CancellationToken ct = default)
+        {
+            var serializer = new JsonSerializer();
+
+            using var sr = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(sr);
+
+            await Task.CompletedTask;
+
+            return serializer.Deserialize<List<CosmosItem<T>>>(jsonReader);
+
+            //if (stream is MemoryStream memoryStream)
+            //{
+            //    var itemAsJsonStr = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+            //    var jObj = JObject.Parse(itemAsJsonStr);
+
+            //    await Task.CompletedTask;
+
+            //    return jObj["Documents"]
+            //        .Select(jt => jt.ToObject<T>())
+            //        .Where(obj => !(obj is null));
+            //}
+
+            //return new List<T>();
         }
 
         public virtual async Task<IEnumerable<string>> GetJsonStringsFromStream(Stream stream, CancellationToken ct = default)
@@ -89,12 +116,14 @@ namespace CosmosResourceTokenClient.Model
                 await Task.CompletedTask;
 
                 return jObj["Documents"]?
-                    .Select(doc => doc?[DocumentPropertyName]?.ToString())
+                    .Select(doc => doc?[DocumentPropertyName]?.ToString(Formatting.Indented))
                     .Where(doc => !string.IsNullOrEmpty(doc));
             }
 
             return new List<string>();
         }
+
+
 
         public async ValueTask DisposeAsync()
         {

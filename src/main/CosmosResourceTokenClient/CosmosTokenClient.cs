@@ -11,14 +11,14 @@ namespace CosmosResourceTokenClient
     [Preserve(AllMembers = true)]
     public class CosmosTokenClient : ICosmosTokenClient, IAsyncDisposable
     {
-        private readonly CosmosTokenClientHandler _cosmosClientHandler;
+        private readonly ClientExecutionHandler _cosmosClientHandler;
 
         public CosmosTokenClient(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
             ICacheSingleObjectByKey resourceTokenCache = null)
         {
-            _cosmosClientHandler = new CosmosTokenClientHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
+            _cosmosClientHandler = new ClientExecutionHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
         }
 
         #region Stream API
@@ -82,12 +82,27 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
+        public async Task<IEnumerable<T>> List<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
+            await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
+            {
+                var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
+                    ? PermissionModeKind.UserRead
+                    : PermissionModeKind.SharedRead;
+
+                await using var cosmosClientEx = new CosmosClientStreamWrapper(resourcePermissionResponse, permissionMode);
+
+                return await cosmosClientEx.GetPartitionObjects<T>(cancellationToken);
+
+            }, PermissionModeKind.UserReadWrite, cancellationToken);
+
+
         public async Task<IEnumerable<string>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead
                     : PermissionModeKind.SharedRead;
+
                 await using var cosmosClientEx = new CosmosClientStreamWrapper(resourcePermissionResponse, permissionMode);
 
                 return await cosmosClientEx.GetPartitionDocuments(cancellationToken);

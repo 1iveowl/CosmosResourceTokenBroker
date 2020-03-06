@@ -12,12 +12,12 @@ using Newtonsoft.Json;
 namespace CosmosResourceTokenClient
 {
     [Preserve(AllMembers = true)]
-    internal class ResourceTokenBrokerClientService : IAsyncDisposable 
+    internal class ClientTransportHandler : IAsyncDisposable 
     {
         private readonly HttpClient _httpClient;
         private readonly Uri _resourceTokenBrokerUri;
 
-        internal ResourceTokenBrokerClientService(string resourceTokenBrokerUrl)
+        internal ClientTransportHandler(string resourceTokenBrokerUrl)
         {
             if (string.IsNullOrEmpty(resourceTokenBrokerUrl))
             {

@@ -10,35 +10,35 @@ using CosmosResourceToken.Core.Model;
 namespace CosmosResourceTokenClient
 {
     [Preserve(AllMembers = true)]
-    internal class CosmosTokenClientHandler : IAsyncDisposable
+    internal class ClientExecutionHandler : IAsyncDisposable
     {
         private readonly IB2CAuthService _authService;
-        private readonly ResourceTokenBrokerClientService _brokerClient;
+        private readonly ClientTransportHandler _brokerClient;
         private readonly ICacheSingleObjectByKey _resourceTokenCache;
 
-        internal CosmosTokenClientHandler(
+        internal ClientExecutionHandler(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
             ICacheSingleObjectByKey resourceTokenCache = null)
         {
             _authService = authService ?? throw new NoNullAllowedException("B2C Authentication Service construction parameter cannot be null");
 
-            _brokerClient = new ResourceTokenBrokerClientService(resourceTokenBrokerUrl);
+            _brokerClient = new ClientTransportHandler(resourceTokenBrokerUrl);
             _resourceTokenCache = resourceTokenCache;
         }
 
-        internal async Task Execute(Func<IResourcePermissionResponse, Task> cosmosfunc, PermissionModeKind permissionMode, CancellationToken ct)
+        internal async Task Execute(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
-            await cosmosfunc(resourcePermissionResponse);
+            await cosmosFunc(resourcePermissionResponse);
         }
 
-        internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosfunc, PermissionModeKind permissionMode, CancellationToken ct)
+        internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
-            return await cosmosfunc(resourcePermissionResponse);
+            return await cosmosFunc(resourcePermissionResponse);
         }
 
         private async Task<IResourcePermissionResponse> GetResourcePermissionResponse(PermissionModeKind permissionMode, CancellationToken ct)

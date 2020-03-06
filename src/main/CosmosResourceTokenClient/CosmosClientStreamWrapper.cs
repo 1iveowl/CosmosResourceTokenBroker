@@ -105,7 +105,7 @@ namespace CosmosResourceTokenClient
                 {
                     await using var cosmosItem = new CosmosItem<T>();
                         
-                    var item = await cosmosItem.GetObjectFromStream(response.Content, ct);
+                    var item = await cosmosItem.GetItemFromStream(response.Content, ct);
 
                     return item.Document;
                 }
@@ -145,6 +145,42 @@ namespace CosmosResourceTokenClient
                     if (jsonStrings?.Any() ?? false)
                     {
                         jsonItemList.Add(jsonStrings);
+                    }
+                }
+
+                return jsonItemList.SelectMany(d => d);
+            }
+            catch (Exception ex)
+            {
+                throw new CosmosClientException($"Unable to read partition: {_partitionKeyStr}.", ex);
+            }
+        }
+
+        internal async Task<IEnumerable<T>> GetPartitionObjects<T>(CancellationToken ct)
+        {
+            try
+            {
+                var queryRequestOption = new QueryRequestOptions
+                {
+                    PartitionKey = new PartitionKey(_partitionKeyStr)
+                };
+
+                var feedIterator = _container
+                    .GetItemQueryStreamIterator(requestOptions: queryRequestOption);
+
+                var jsonItemList = new List<IEnumerable<T>>();
+
+                while (feedIterator.HasMoreResults)
+                {
+                    using var response = await feedIterator.ReadNextAsync(cancellationToken: ct);
+
+                    await using var cosmosItem = new CosmosItem<T>();
+
+                    var cosmosItems = await cosmosItem.GetItemsFromStream(response.Content, ct);
+
+                    if (cosmosItems?.Any() ?? false)
+                    {
+                        jsonItemList.Add(cosmosItems.Select(ci => ci.Document));
                     }
                 }
 
