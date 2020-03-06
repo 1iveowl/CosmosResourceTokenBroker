@@ -20,7 +20,7 @@ Fixed Android bug: Java type `microsoft.identity.client.AuthenticationActivity` 
     <dependencies>
     
       <group targetFramework="netstandard2.1">
-          <dependency id="Microsoft.Identity.Client" version="4.8.2"/>
+          <dependency id="Microsoft.Identity.Client" version="4.9.0"/>
       </group>
 
     </dependencies>
