@@ -107,7 +107,7 @@ namespace CosmosResourceTokenClient
                         
                     var item = await cosmosItem.GetItemFromStream(response.Content, ct);
 
-                    return item.Document;
+                    return item;
                 }
             }
             catch (Exception ex)
@@ -176,11 +176,11 @@ namespace CosmosResourceTokenClient
 
                     await using var cosmosItem = new CosmosItem<T>();
 
-                    var cosmosItems = await cosmosItem.GetItemsFromStream(response.Content, ct);
+                    var items = await cosmosItem.GetItemsFromStream(response.Content, ct);
 
-                    if (cosmosItems?.Any() ?? false)
+                    if (items?.Any() ?? false)
                     {
-                        jsonItemList.Add(cosmosItems.Select(ci => ci.Document));
+                        jsonItemList.Add(items);
                     }
                 }
 

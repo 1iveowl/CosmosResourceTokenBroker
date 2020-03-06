@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceTokenClient.JsonSerialize;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace CosmosResourceTokenClient.Model
 {
@@ -66,7 +67,7 @@ namespace CosmosResourceTokenClient.Model
             return _memoryStream;
         }
 
-        public virtual async Task<ICosmosItem<T>> GetItemFromStream(Stream stream, CancellationToken ct = default)
+        public virtual async Task<T> GetItemFromStream(Stream stream, CancellationToken ct = default)
         {
             var serializer = new JsonSerializer();
 
@@ -75,49 +76,35 @@ namespace CosmosResourceTokenClient.Model
 
             await Task.CompletedTask;
 
-            return serializer.Deserialize<CosmosItem<T>>(jsonReader);
+            return serializer.Deserialize<CosmosItem<T>>(jsonReader).Document;
         }
 
-        public async Task<IEnumerable<ICosmosItem<T>>> GetItemsFromStream(Stream stream, CancellationToken ct = default)
+        public async Task<IEnumerable<T>> GetItemsFromStream(Stream stream, CancellationToken ct = default)
         {
-            var serializer = new JsonSerializer();
+            var jsonStrList = await GetJsonStringsFromStream(stream, ct);
 
-            using var sr = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(sr);
-
-            await Task.CompletedTask;
-
-            return serializer.Deserialize<List<CosmosItem<T>>>(jsonReader);
-
-            //if (stream is MemoryStream memoryStream)
-            //{
-            //    var itemAsJsonStr = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-            //    var jObj = JObject.Parse(itemAsJsonStr);
-
-            //    await Task.CompletedTask;
-
-            //    return jObj["Documents"]
-            //        .Select(jt => jt.ToObject<T>())
-            //        .Where(obj => !(obj is null));
-            //}
-
-            //return new List<T>();
+            return jsonStrList.Select(jsonStr => System.Text.Json.JsonSerializer.Deserialize<T>(jsonStr.ToString()));
         }
 
         public virtual async Task<IEnumerable<string>> GetJsonStringsFromStream(Stream stream, CancellationToken ct = default)
         {
-            if (stream is MemoryStream memoryStream)
+
+            var jsonDocument = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+            var documents = jsonDocument.RootElement
+                .EnumerateObject()
+                .FirstOrDefault(x => x.NameEquals("Documents"));
+
+            if (documents.Value.ValueKind == JsonValueKind.Array)
             {
-                var itemAsJsonStr = Encoding.UTF8.GetString(memoryStream.ToArray());
+                var serializer = new JsonSerializer();
 
-                var jObj = JObject.Parse(itemAsJsonStr);
+                var list = documents.Value.EnumerateArray()
+                    .Select(o => o.EnumerateObject()
+                        .FirstOrDefault(p => p.NameEquals("document")).Value)
+                    .Select(x => x.ToString());
 
-                await Task.CompletedTask;
-
-                return jObj["Documents"]?
-                    .Select(doc => doc?[DocumentPropertyName]?.ToString(Formatting.Indented))
-                    .Where(doc => !string.IsNullOrEmpty(doc));
+                return list;
             }
 
             return new List<string>();

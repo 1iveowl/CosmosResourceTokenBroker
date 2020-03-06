@@ -13,9 +13,9 @@ namespace CosmosResourceToken.Core.Client
 
         Task<Stream> ToStream(string partitionKeyHeader, string partitionKey, CancellationToken ct = default);
 
-        Task<ICosmosItem<T>> GetItemFromStream(Stream stream, CancellationToken ct = default);
+        Task<T> GetItemFromStream(Stream stream, CancellationToken ct = default);
 
-        Task<IEnumerable<ICosmosItem<T>>> GetItemsFromStream(Stream stream, CancellationToken ct = default);
+        Task<IEnumerable<T>> GetItemsFromStream(Stream stream, CancellationToken ct = default);
 
         Task<IEnumerable<string>> GetJsonStringsFromStream(Stream stream, CancellationToken ct = default);
     }

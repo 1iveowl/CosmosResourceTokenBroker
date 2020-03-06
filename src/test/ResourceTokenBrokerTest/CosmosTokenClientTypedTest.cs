@@ -47,9 +47,9 @@ namespace ResourceTokenBrokerTest
                 var configObject = JObject.Parse(jsonStr);
 
                 _accessToken = configObject["AccessToken"].ToString();
-                _expiredAccessToken = configObject["ExpiredAccessToken"].ToString();
+                _expiredAccessToken = configObject["ExpiredAccessToken"]?.ToString();
                 _resourceTokenBrokerUrl = configObject["ResourceTokenBrokerUrl"].ToString();
-                _resourceTokenBrokerUrlLocalHost = configObject["ResourceTokenBrokerUrlLocalHost"].ToString();
+                _resourceTokenBrokerUrlLocalHost = configObject["ResourceTokenBrokerUrlLocalHost"]?.ToString();
                 
                 var scopes = ((JArray)configObject["Scopes"])?.Select(scope => scope?.ToString());
             }
@@ -147,6 +147,26 @@ namespace ResourceTokenBrokerTest
             var documents = await cosmosTokenClient.GetPartitionDocuments(defaultPartition);
 
             Assert.True( documents.Count() >= numberOfDocuments);
+        }
+
+        [Theory, Order(450)]
+        [InlineData(true, DefaultPartitionKind.UserDocument, 2)]
+        [InlineData(true, DefaultPartitionKind.Shared, 1)]
+        public async Task GetList(
+            bool isValidToken,
+            DefaultPartitionKind defaultPartition,
+            int numberOfDocuments)
+        {
+            var brokerUrl = IsAzureFunctionLocalEmulator ? _resourceTokenBrokerUrlLocalHost : _resourceTokenBrokerUrl;
+
+            var userContext = CreateTestUserContext(isValidToken, IsAzureFunctionLocalEmulator);
+            var testB2CAuthService = new TestB2CAuthService(userContext);
+
+            await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
+
+            var documents = await cosmosTokenClient.List<Person>(defaultPartition);
+
+            Assert.True(documents.Count() >= numberOfDocuments);
         }
 
         [Theory, Order(400)]
