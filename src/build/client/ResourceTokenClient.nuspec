@@ -14,6 +14,7 @@
       For Mobile scenarios. Client using Resource Token Broker permissions for reading and writing to Azure Cosmos DB</description>
     <releaseNotes>
 Refactored to use the Stream API for speed and flexibility.
+Bug fixes
     </releaseNotes>
     <copyright>Copyright 2020</copyright>
     <tags>azure cosmos-db resource-token-broker authorization xamarin</tags>

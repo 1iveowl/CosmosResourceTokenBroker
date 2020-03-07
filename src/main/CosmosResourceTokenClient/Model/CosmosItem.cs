@@ -70,22 +70,42 @@ namespace CosmosResourceTokenClient.Model
         public virtual async Task<T> GetItemFromStream(Stream stream, CancellationToken ct = default)
         {
             var serializer = new JsonSerializer();
-
-            using var sr = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(sr);
+            using var streamReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(streamReader);
 
             await Task.CompletedTask;
 
-            return serializer.Deserialize<CosmosItem<T>>(jsonReader).Document;
+            ICosmosItem<T> cosmosItem = default;
+
+            while (jsonReader.Read())
+            {
+                cosmosItem = serializer.Deserialize<CosmosItem<T>>(jsonReader);
+            }
+            
+            if (cosmosItem is null)
+            {
+                return default;
+            }
+
+            return cosmosItem.Document;
+
+            //var serializer = new JsonSerializer();
+
+            //using var sr = new StreamReader(stream);
+            //using var jsonReader = new JsonTextReader(sr);
+
+            //await Task.CompletedTask;
+
+            //return serializer.Deserialize<CosmosItem<T>>(jsonReader).Document;
         }
 
         public async Task<IEnumerable<T>> GetItemsFromStream(Stream stream, CancellationToken ct = default)
         {
             var jsonStrList = await GetJsonStringsFromStream(stream, ct);
 
-            return jsonStrList.Select(jsonStr => System.Text.Json.JsonSerializer.Deserialize<T>(jsonStr.ToString()));
+            return jsonStrList.Select(JsonConvert.DeserializeObject<T>);
         }
-
+        
         public virtual async Task<IEnumerable<string>> GetJsonStringsFromStream(Stream stream, CancellationToken ct = default)
         {
 

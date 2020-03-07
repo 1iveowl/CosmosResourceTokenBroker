@@ -149,26 +149,6 @@ namespace ResourceTokenBrokerTest
             Assert.True( documents.Count() >= numberOfDocuments);
         }
 
-        [Theory, Order(450)]
-        [InlineData(true, DefaultPartitionKind.UserDocument, 2)]
-        [InlineData(true, DefaultPartitionKind.Shared, 1)]
-        public async Task GetList(
-            bool isValidToken,
-            DefaultPartitionKind defaultPartition,
-            int numberOfDocuments)
-        {
-            var brokerUrl = IsAzureFunctionLocalEmulator ? _resourceTokenBrokerUrlLocalHost : _resourceTokenBrokerUrl;
-
-            var userContext = CreateTestUserContext(isValidToken, IsAzureFunctionLocalEmulator);
-            var testB2CAuthService = new TestB2CAuthService(userContext);
-
-            await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
-
-            var documents = await cosmosTokenClient.List<Person>(defaultPartition);
-
-            Assert.True(documents.Count() >= numberOfDocuments);
-        }
-
         [Theory, Order(400)]
         [InlineData(true, "Person", DefaultPartitionKind.UserDocument,  true)]
         [InlineData(true, "Person", DefaultPartitionKind.Shared, false)]
@@ -203,6 +183,26 @@ namespace ResourceTokenBrokerTest
             Assert.False(result);
         }
 
+        [Theory, Order(450)]
+        [InlineData(true, DefaultPartitionKind.UserDocument, 2)]
+        [InlineData(true, DefaultPartitionKind.Shared, 1)]
+        public async Task GetList(
+            bool isValidToken,
+            DefaultPartitionKind defaultPartition,
+            int numberOfDocuments)
+        {
+            var brokerUrl = IsAzureFunctionLocalEmulator ? _resourceTokenBrokerUrlLocalHost : _resourceTokenBrokerUrl;
+
+            var userContext = CreateTestUserContext(isValidToken, IsAzureFunctionLocalEmulator);
+            var testB2CAuthService = new TestB2CAuthService(userContext);
+
+            await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
+
+            var documents = await cosmosTokenClient.List<Person>(defaultPartition);
+
+            Assert.True(documents.Count() >= numberOfDocuments);
+        }
+
 
         // This test requires that there are two documents in your Cosmos DB of the type 'Person'.
         // The share document should have firstname: John, lastname: Doe
@@ -229,6 +229,34 @@ namespace ResourceTokenBrokerTest
             Assert.Equal(expectedFirstName, document.FirstName);
             Assert.Equal(expectedLastName, document.LastName);
         }
+
+        // This test requires that there are two documents in your Cosmos DB of the type 'Person'.
+        // The share document should have firstname: John, lastname: Doe
+        // The user document should be in a partition that the user of the valid access token has access to.
+        // The user document should have firstname: Ian, lastname: Fleming
+        [Theory, Order(550)]
+        [InlineData(true, "Person", DefaultPartitionKind.Shared, "John", "Doe")]
+        [InlineData(true, "Person", DefaultPartitionKind.UserDocument, "James", "Bond")]
+        public async Task ReadDocumentEx(bool isValidToken, string documentPrefix, DefaultPartitionKind defaultPartition, string expectedFirstName, string expectedLastName)
+        {
+            var brokerUrl = IsAzureFunctionLocalEmulator ? _resourceTokenBrokerUrlLocalHost : _resourceTokenBrokerUrl;
+
+            var userContext = CreateTestUserContext(isValidToken, IsAzureFunctionLocalEmulator);
+            var testB2CAuthService = new TestB2CAuthService(userContext);
+
+            await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
+
+            var documentId = defaultPartition == DefaultPartitionKind.Shared
+                ? documentPrefix
+                : $"{documentPrefix}2-{userContext.UserIdentifier}";
+
+            var document = await cosmosTokenClient.Read<PersonEx>(documentId, defaultPartition);
+
+            Assert.Equal(expectedFirstName, document.FirstName);
+            Assert.Equal(expectedLastName, document.LastName);
+        }
+
+
 
         // Trying to read a document that exist but that has a partition key that user does not have access to.
         [Theory, Order(600)]
