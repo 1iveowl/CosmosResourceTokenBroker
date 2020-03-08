@@ -5,7 +5,7 @@ namespace CosmosResourceToken.Core.Serialize
 {
      
     [Preserve(AllMembers = true)]
-    public class ConcreteTypeConverter<TConcrete> : JsonConverter
+    internal class ConcreteTypeConverter<TConcrete> : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

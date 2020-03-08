@@ -6,10 +6,9 @@ namespace B2CAuthClient.Abstract
 {
     /// <summary>
     ///     <para>
-    ///         A simple interface for implementing log-in and log-out of Azure AD B2C authenticated user and getting current state of a logged in user..
+    ///         Ans interface for log-in and log-out of Azure AD B2C authenticated a users.
     ///     </para>
     /// </summary>
-
     [Preserve(AllMembers = true)]
     public interface IB2CAuthService
     {
