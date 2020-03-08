@@ -10,6 +10,12 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Utility\**" />
+    <EmbeddedResource Remove="Utility\**" />
+    <None Remove="Utility\**" />
+  </ItemGroup>
+
   <!--https://github.com/Azure/azure-cosmos-dotnet-v3/issues/624#issuecomment-541863708-->
   <!--<PropertyGroup>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -40,9 +46,5 @@
     <ProjectReference Include="..\..\..\..\core\CosmosResourceToken.Core\CosmosResourceToken.Core.csproj" />
     <ProjectReference Include="..\..\..\..\main\B2CAuthClient\B2CAuthClient.csproj" />
     <ProjectReference Include="..\..\..\..\main\CosmosResourceTokenClient\CosmosResourceTokenClient.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Utility\" />
   </ItemGroup>
 </Project>

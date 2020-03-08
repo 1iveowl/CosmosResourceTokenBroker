@@ -8,14 +8,45 @@ using Microsoft.Identity.Client;
 
 namespace B2CAuthClient
 {
+    /// <summary>
+    ///     <para>
+    ///         An implementation of a Azure AD B2S Authentication Service.
+    ///     </para>
+    ///     <para>
+    ///         Implements <c>IB2CAuthService</c>
+    ///     </para>
+    /// </summary>
     public class B2CAuthService : IB2CAuthService
     {
         private readonly IPublicClientApplication _pca;
         private readonly IEnumerable<string> _defaultScopes;
         private readonly string _signUpSignInFlowName;
 
+        /// <summary>
+        ///     <para>
+        ///         Get the current user context of a log-in user.
+        ///     </para>
+        ///     <para>
+        ///         Null if no user has signed in.
+        ///     </para>
+        /// </summary>
         public IUserContext CurrentUserContext { get; private set; }
 
+
+        /// <summary>
+        ///     <para>
+        ///         Creates a new instance of <see cref="B2CAuthService"></see>
+        ///     </para>
+        /// </summary>
+        /// <param name="b2cHostName">Azure AD B2C Host name</param>
+        /// <param name="tenantId">Azure AD B2C Tenant Id</param>
+        /// <param name="clientId">Azure AD B2C Client ID - aka. Application Id</param>
+        /// <param name="signUpSignInFlowName">Azure AD B2C Sign In Flow name </param>
+        /// <param name="defaultScopes">Azure Ad B2C Scopes</param>
+        /// <param name="iOsChainGroup">iOS Chain Group</param>
+        /// <param name="isAndroidDeviceFunc">Func that returns <c>true</c> at run-time if the device is an Android device.</param>
+        /// <param name="isAppleDeviceFunc">Func that returns <c>true</c> at run-time if the device is an iOS device.</param>
+        /// <param name="getCurrentParentWindowsForAndroidFunc">Func that returns the Parent Window for Android device.</param>
         public B2CAuthService(
             string b2cHostName, 
             string tenantId, 

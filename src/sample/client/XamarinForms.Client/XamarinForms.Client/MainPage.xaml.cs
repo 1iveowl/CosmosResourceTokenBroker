@@ -61,7 +61,6 @@ namespace XamarinForms.Client
                 Func<object> getAndroidParentWindowFunc = () =>
                     DependencyService.Get<IParentWindowLocatorService>().GetCurrentParentWindow();
 
-
                 _authService = new B2CAuthService(
                     b2cHostName,
                     tenantId,
@@ -84,6 +83,7 @@ namespace XamarinForms.Client
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
             _userContext = await _authService.SignIn();
+            
             SaveButton.IsEnabled = true;
         }
 
