@@ -36,8 +36,16 @@
         </Label>
 
         <Button x:Name="SaveButton"
-                Text="Save"
+                Text="Replace "
                 Clicked="Button_Save"></Button>
+
+        <Button x:Name="CreateButton"
+                Text="Create"
+                Clicked="CreateButton_OnClicked"></Button>
+
+        <Button x:Name="GetDocuments"
+                Text="Get Documents"
+                Clicked="GetDocuments_OnClicked"></Button>
 
         <Button x:Name="ReadShared"
                 Text="Read shared"

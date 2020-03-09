@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -66,6 +67,11 @@ namespace CosmosResourceTokenClient
                 throw new CosmosClientException(
                     $"Unable to create with stream payload. Status Code: {response.StatusCode.ToString()}");
             }
+            catch (ConfigurationException)
+            {
+                // There's an issue with Android and the System.Configuration.ConfigurationManager: https://github.com/xamarin/Xamarin.Forms/issues/5935
+                // For now we are ignoring ConfigurationExceptions as it seems that the operation works despite the exception.
+            }
             catch (Exception ex)
             {
                 throw new CosmosClientException($"Unable to create with stream payload. Unhandled exception: {ex}", ex);
@@ -80,14 +86,21 @@ namespace CosmosResourceTokenClient
 
                 var payload = await cosmosItem.ToStream(_partitionKeyHeader, _partitionKeyStr, ct);
 
-                using var response = await _container.UpsertItemStreamAsync(payload, _partitionKey, cancellationToken: ct);
+                using var response =
+                    await _container.UpsertItemStreamAsync(payload, _partitionKey, cancellationToken: ct);
 
                 if (response.IsSuccessStatusCode)
                 {
                     return;
                 }
 
-                throw new CosmosClientException($"Unable to replace/upsert: {typeof(T).FullName} with id: {id}. Status Code: {response.StatusCode.ToString()}");
+                throw new CosmosClientException(
+                    $"Unable to replace/upsert: {typeof(T).FullName} with id: {id}. Status Code: {response.StatusCode.ToString()}");
+            }
+            catch (ConfigurationException)
+            {
+                // There's an issue with Android and the System.Configuration.ConfigurationManager: https://github.com/xamarin/Xamarin.Forms/issues/5935
+                // For now we are ignoring ConfigurationExceptions as it seems that the operation works despite the exception.
             }
             catch (Exception ex)
             {
@@ -202,6 +215,11 @@ namespace CosmosResourceTokenClient
                 {
                     return;
                 }
+            }
+            catch (ConfigurationException)
+            {
+                // There's an issue with Android and the System.Configuration.ConfigurationManager: https://github.com/xamarin/Xamarin.Forms/issues/5935
+                // For now we are ignoring PlatformNotSupportedExceptions as it seems that the operation works despite the exception.
             }
             catch (Exception ex)
             {

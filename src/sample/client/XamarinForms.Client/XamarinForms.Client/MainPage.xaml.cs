@@ -105,6 +105,19 @@ namespace XamarinForms.Client
             }
         }
 
+        private async void CreateButton_OnClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                var person = new Person(FirstName.Text, LastName.Text);
+                await _cosmosTokenClient.Create($"Person-{Guid.NewGuid()}-{_userContext.UserIdentifier}", person, DefaultPartitionKind.UserDocument);
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
         private async void Button_ReadShared(object sender, EventArgs e)
         {
             try
@@ -120,5 +133,18 @@ namespace XamarinForms.Client
 
             }
         }
+
+        private async void GetDocuments_OnClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                var documents = await _cosmosTokenClient.GetPartitionDocuments(DefaultPartitionKind.UserDocument);
+            }
+            catch (Exception exception)
+            {
+
+            }
+        }
+
     }
 }
