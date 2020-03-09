@@ -13,8 +13,9 @@
     <description>
       For Mobile scenarios. Client using Resource Token Broker permissions for reading and writing to Azure Cosmos DB</description>
     <releaseNotes>
-Refactored to use the Stream API for speed and flexibility.
-Bug fixes
+[General] Refactored to use the Stream API for speed and flexibility.
+[General] Bug fixes
+[Android] Fixed issue an Android with System.Configuration.ConfigurationManager throwing ConfigurationException/Platform not supported Exception.
     </releaseNotes>
     <copyright>Copyright 2020</copyright>
     <tags>azure cosmos-db resource-token-broker authorization xamarin</tags>
