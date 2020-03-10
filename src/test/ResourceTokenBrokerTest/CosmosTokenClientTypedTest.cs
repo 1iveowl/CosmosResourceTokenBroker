@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
@@ -230,6 +231,28 @@ namespace ResourceTokenBrokerTest
             Assert.Equal(expectedLastName, document.LastName);
         }
 
+        [Theory, Order(525)]
+        [InlineData(true, "Person", DefaultPartitionKind.Shared)]
+        [InlineData(true, "Person", DefaultPartitionKind.UserDocument)]
+        public async Task ReadMissingDocument(bool isValidToken, string documentPrefix, DefaultPartitionKind defaultPartition)
+        {
+            var brokerUrl = IsAzureFunctionLocalEmulator ? _resourceTokenBrokerUrlLocalHost : _resourceTokenBrokerUrl;
+
+            var userContext = CreateTestUserContext(isValidToken, IsAzureFunctionLocalEmulator);
+            var testB2CAuthService = new TestB2CAuthService(userContext);
+
+            await using var cosmosTokenClient = new CosmosTokenClient(testB2CAuthService, brokerUrl);
+
+            try
+            {
+                var document = await cosmosTokenClient.Read<Person>("DoesNotExist", defaultPartition);
+            }
+            catch (Exception ex)
+            {
+                Assert.True(ex is DataException);
+            }
+        }
+
         // This test requires that there are two documents in your Cosmos DB of the type 'Person'.
         // The share document should have firstname: John, lastname: Doe
         // The user document should be in a partition that the user of the valid access token has access to.
@@ -276,7 +299,7 @@ namespace ResourceTokenBrokerTest
             }
             catch (Exception ex)
             {
-                Assert.True(ex is CosmosClientException);
+                Assert.True(ex is DataException);
             }
         }
 

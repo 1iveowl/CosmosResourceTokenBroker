@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyVersion>0.9.3.0</AssemblyVersion>
-    <FileVersion>0.9.3.0</FileVersion>
+    <AssemblyVersion>0.9.6.0</AssemblyVersion>
+    <FileVersion>0.9.6.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Client" Version="4.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
 
     <!--<PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.7">
       <ExcludeAssets>All</ExcludeAssets>
@@ -18,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\B2CAuthClient.Abstract\B2CAuthClient.Abstract.csproj" />
-    <ProjectReference Include="..\..\core\CosmosResourceToken.Core\CosmosResourceToken.Core.csproj" />
   </ItemGroup>
 
 </Project>

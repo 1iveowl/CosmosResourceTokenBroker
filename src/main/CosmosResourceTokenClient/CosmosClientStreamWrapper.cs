@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CosmosResourceToken.Core.Client;
@@ -67,7 +69,7 @@ namespace CosmosResourceTokenClient
                 throw new CosmosClientException(
                     $"Unable to create with stream payload. Status Code: {response.StatusCode.ToString()}");
             }
-            catch (ConfigurationException)
+            catch (ConfigurationException ex)
             {
                 // There's an issue with Android and the System.Configuration.ConfigurationManager: https://github.com/xamarin/Xamarin.Forms/issues/5935
                 // For now we are ignoring ConfigurationExceptions as it seems that the operation works despite the exception.
@@ -97,7 +99,7 @@ namespace CosmosResourceTokenClient
                 throw new CosmosClientException(
                     $"Unable to replace/upsert: {typeof(T).FullName} with id: {id}. Status Code: {response.StatusCode.ToString()}");
             }
-            catch (ConfigurationException)
+            catch (ConfigurationException ex)
             {
                 // There's an issue with Android and the System.Configuration.ConfigurationManager: https://github.com/xamarin/Xamarin.Forms/issues/5935
                 // For now we are ignoring ConfigurationExceptions as it seems that the operation works despite the exception.
@@ -110,14 +112,25 @@ namespace CosmosResourceTokenClient
 
         internal async Task<T> Read<T>(string id, CancellationToken ct)
         {
+            ResponseMessage response;
+
             try
             {
-                var response = await _container.ReadItemStreamAsync(id, _partitionKey, cancellationToken:ct);
+                response = await _container.ReadItemStreamAsync(id, _partitionKey, cancellationToken:ct);
 
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{ex}");
+                throw new CosmosClientException($"Unable to read: {id} to Stream", ex);
+            }
+
+            try
+            {
                 if (response.IsSuccessStatusCode)
                 {
                     await using var cosmosItem = new CosmosItem<T>();
-                        
+
                     var item = await cosmosItem.GetItemFromStream(response.Content, ct);
 
                     return item;
@@ -126,10 +139,15 @@ namespace CosmosResourceTokenClient
             catch (Exception ex)
             {
                 Debug.WriteLine($"{ex}");
-                throw new CosmosClientException($"Unable to read: {id} to Stream", ex);
+                throw new CosmosClientException($"Unable deserialize document with '{id}' from Stream.", ex);
             }
 
-            throw new CosmosClientException($"Unable to read: {id} to Stream");
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new DataException($"Document with id '{id}' not found");
+            }
+
+            throw new CosmosClientException($"Unable to read: {id} to Stream. Status code: {response.StatusCode.ToString()}");
 
         }
 

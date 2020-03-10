@@ -20,5 +20,6 @@ namespace CosmosResourceToken.Core.Client
         public CosmosClientAuthenticationException(string message) : base(message) { }
 
         public CosmosClientAuthenticationException(string message, Exception ex) : base(message, ex) { }
+
     }
 }

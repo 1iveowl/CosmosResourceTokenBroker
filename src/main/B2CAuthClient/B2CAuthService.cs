@@ -100,7 +100,7 @@ namespace B2CAuthClient
         
         public async Task SignOut(CancellationToken cancellationToken = default)
         {
-            var account = await GetAccount();
+            var account = await GetCachedAccounts();
 
             if (account is null)
             {
@@ -108,31 +108,39 @@ namespace B2CAuthClient
             }
 
             await _pca.RemoveAsync(account);
-
+            
             CurrentUserContext = new UserContext();
-
         }
-
+        
         private async Task<IUserContext> AcquireToken(bool silentlyOnly, IEnumerable<string> scopes, CancellationToken ct)
         {
-            var account = await GetAccount();
+            var account = await GetCachedAccounts();
 
             try
             {
-                var authResult = await _pca.AcquireTokenSilent(scopes, account)
-                    .ExecuteAsync(ct);
-
-                return new UserContext(authResult);
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                if (silentlyOnly)
+                if (!(account is null))
                 {
-                    throw ex;
-                }
+                    var authResult = await _pca.AcquireTokenSilent(scopes, account)
+                        .ExecuteAsync(ct);
 
-                return await SignInInteractively(account, ct);
+                    return new UserContext(authResult);
+                }
             }
+            catch (MsalUiRequiredException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                throw new B2CAuthClientException("Unhandled B2C Authentication exception", ex);
+            }
+
+            if (silentlyOnly)
+            {
+                throw new B2CAuthClientException(true, "Interactive sign-in is required");
+            }
+
+            return await SignInInteractively(account, ct);
         }
 
         private async Task<IUserContext> SignInInteractively(IAccount account, CancellationToken ct)
@@ -161,10 +169,10 @@ namespace B2CAuthClient
             }
         }
 
-        private async Task<IAccount> GetAccount()
+        private async Task<IAccount> GetCachedAccounts()
         {
             var accounts = await _pca.GetAccountsAsync();
-
+            
             return accounts.FirstOrDefault(a =>
                 a.HomeAccountId?.ObjectId?.Split('.')?[0]?.EndsWith(_signUpSignInFlowName.ToLowerInvariant()) ?? false);
         }
