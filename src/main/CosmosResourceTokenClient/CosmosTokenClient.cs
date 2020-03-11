@@ -14,9 +14,9 @@ namespace CosmosResourceTokenClient
     ///     </para>
     /// </summary>
     [Preserve(AllMembers = true)]
-    public class CosmosTokenClient : ICosmosTokenClient, IAsyncDisposable
+    public class CosmosTokenClient : BrokerClientExecutionHandler, ICosmosTokenClient, IAsyncDisposable
     {
-        private readonly ClientExecutionHandler _cosmosClientHandler;
+        private readonly BrokerClientExecutionHandler _cosmosClientHandler;
 
         /// <summary>
         ///     <para>
@@ -29,9 +29,9 @@ namespace CosmosResourceTokenClient
         public CosmosTokenClient(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
-            ICacheSingleObjectByKey resourceTokenCache = null)
+            ICacheSingleObjectByKey resourceTokenCache = null) : base(authService, resourceTokenBrokerUrl, resourceTokenCache)
         {
-            _cosmosClientHandler = new ClientExecutionHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
+
         }
 
         #region Stream API
@@ -179,9 +179,10 @@ namespace CosmosResourceTokenClient
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
 
-        public async ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             await _cosmosClientHandler.DisposeAsync();
+            await base.DisposeAsync();
         }
 
         #endregion

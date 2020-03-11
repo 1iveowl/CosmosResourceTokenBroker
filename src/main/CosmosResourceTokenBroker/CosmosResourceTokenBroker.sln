@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Main", "Main", "{99FB34C1-F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CosmosResourceTokenClient", "..\CosmosResourceTokenClient\CosmosResourceTokenClient.csproj", "{798DC5E7-785D-4811-90C3-E62C8F2594EF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{66A99293-D02D-412C-831F-210F0E2F231F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstract", "Abstract", "{66A99293-D02D-412C-831F-210F0E2F231F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CosmosResourceToken.Core", "..\..\core\CosmosResourceToken.Core\CosmosResourceToken.Core.csproj", "{D7D84C3E-1B0F-4871-9C08-9DFBA75C105B}"
 EndProject

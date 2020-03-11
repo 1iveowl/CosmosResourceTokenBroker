@@ -5,4 +5,13 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\core\B2CAuthClient.Abstract\B2CAuthClient.Abstract.csproj" />
+    <ProjectReference Include="..\..\..\main\B2CAuthClient\B2CAuthClient.csproj" />
+  </ItemGroup>
+
 </Project>
