@@ -291,6 +291,8 @@ public interface IB2CAuthService
 {
     IUserContext CurrentUserContext { get; }
 
+    bool IsInterativeSignInInProgress { get; }
+
     Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default);
 
     Task SignOut(CancellationToken cancellationToken = default);

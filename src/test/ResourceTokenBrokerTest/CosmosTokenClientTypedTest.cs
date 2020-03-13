@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using B2CAuthClient.Abstract;
 using CosmosResourceToken.Core.Client;
 using CosmosResourceTokenClient;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ResourceTokenBrokerTest.Model;
 using ResourceTokenBrokerTest.Service;

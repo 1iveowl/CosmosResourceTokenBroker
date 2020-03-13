@@ -24,6 +24,13 @@ namespace B2CAuthClient.Abstract
 
         /// <summary>
         ///     <para>
+        ///         <c>True</c> if an interactive sign-in session is already in progress.
+        ///     </para>
+        /// </summary>
+        bool IsInterativeSignInInProgress { get; }
+
+        /// <summary>
+        ///     <para>
         ///         Sign-in user.
         ///     </para>
         /// </summary>
