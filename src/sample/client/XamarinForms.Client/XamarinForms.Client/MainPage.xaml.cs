@@ -82,6 +82,11 @@ namespace XamarinForms.Client
 
         private async void Button_OnSignIn(object sender, EventArgs e)
         {
+            if (_authService.IsInterativeSignInInProgress)
+            {
+                return;
+            }
+
             _userContext = await _authService.SignIn();
             
             SaveButton.IsEnabled = true;

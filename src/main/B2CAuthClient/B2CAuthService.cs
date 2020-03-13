@@ -16,13 +16,12 @@ namespace B2CAuthClient
     ///         Implements <c>IB2CAuthService</c>
     ///     </para>
     /// </summary>
+    [Preserve(AllMembers = true)]
     public class B2CAuthService : IB2CAuthService
     {
         private readonly IPublicClientApplication _pca;
         private readonly IEnumerable<string> _defaultScopes;
         private readonly string _signUpSignInFlowName;
-
-        private readonly SemaphoreSlim _semaphore;
 
         /// <summary>
         ///     <para>
@@ -39,7 +38,6 @@ namespace B2CAuthClient
         public IUserContext CurrentUserContext { get; private set; }
 
         public bool IsInterativeSignInInProgress { get; private set; }
-
 
         /// <summary>
         ///     <para>
@@ -86,8 +84,6 @@ namespace B2CAuthClient
             }
 
             _pca = builder.Build();
-
-            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         public async Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default)
@@ -200,20 +196,6 @@ namespace B2CAuthClient
             
             return accounts.FirstOrDefault(a =>
                 a.HomeAccountId?.ObjectId?.Split('.')?[0]?.EndsWith(_signUpSignInFlowName.ToLowerInvariant()) ?? false);
-        }
-
-        private async Task Execute(Func<Task> task)
-        {
-            await _semaphore.WaitAsync().ConfigureAwait(false);
-
-            try
-            {
-                await task();
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
         }
     }
 }
