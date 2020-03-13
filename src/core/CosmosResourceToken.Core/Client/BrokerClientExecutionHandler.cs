@@ -4,37 +4,36 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using B2CAuthClient.Abstract;
-using CosmosResourceToken.Core.Client;
 using CosmosResourceToken.Core.Model;
 
-namespace CosmosResourceTokenClient
+namespace CosmosResourceToken.Core.Client
 {
-    [Preserve(AllMembers = true)]
-    internal class ClientExecutionHandler : IAsyncDisposable
+    [B2CAuthClient.Abstract.Preserve(AllMembers = true)]
+    public abstract class BrokerClientExecutionHandler : IAsyncDisposable
     {
         private readonly IB2CAuthService _authService;
-        private readonly ClientTransportHandler _brokerClient;
+        private readonly BrokerClientTransportHandler _brokerTransportClient;
         private readonly ICacheSingleObjectByKey _resourceTokenCache;
 
-        internal ClientExecutionHandler(
+        public BrokerClientExecutionHandler(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
             ICacheSingleObjectByKey resourceTokenCache = null)
         {
             _authService = authService ?? throw new NoNullAllowedException("B2C Authentication Service construction parameter cannot be null");
 
-            _brokerClient = new ClientTransportHandler(resourceTokenBrokerUrl);
+            _brokerTransportClient = new BrokerClientTransportHandler(resourceTokenBrokerUrl);
             _resourceTokenCache = resourceTokenCache;
         }
 
-        internal async Task Execute(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        public async Task Execute(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
             await cosmosFunc(resourcePermissionResponse);
         }
 
-        internal async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        public async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
@@ -84,7 +83,7 @@ namespace CosmosResourceTokenClient
             
             if (_resourceTokenCache is null)
             {
-                return await _brokerClient.GetResourceToken(userContext.AccessToken, ct);
+                return await _brokerTransportClient.GetResourceToken(userContext.AccessToken, ct);
             }
 
             return await GetResourceTokenThroughCache(userContext, ct);
@@ -99,7 +98,7 @@ namespace CosmosResourceTokenClient
 
             // local function fetching a new Resource Permission Response from the Resource Token Broker
             // User the first time and whenever an existing Resource Permission Response object in the cache has expired.
-           Task<IResourcePermissionResponse> RenewObjectFunc() => _brokerClient.GetResourceToken(userContext.AccessToken, ct);
+           Task<IResourcePermissionResponse> RenewObjectFunc() => _brokerTransportClient.GetResourceToken(userContext.AccessToken, ct);
 
             // local function evaluating the validity of the object stored in the cache.
             static Task<bool> IsCachedObjectValidFunc(IResourcePermissionResponse cachedPermissionObj)
@@ -142,9 +141,9 @@ namespace CosmosResourceTokenClient
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
-            await _brokerClient.DisposeAsync();
+            await _brokerTransportClient.DisposeAsync();
         }
     }
 }

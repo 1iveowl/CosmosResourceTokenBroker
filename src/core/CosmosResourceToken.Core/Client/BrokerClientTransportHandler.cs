@@ -5,19 +5,18 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using CosmosResourceToken.Core.Client;
 using CosmosResourceToken.Core.Model;
 using Newtonsoft.Json;
 
-namespace CosmosResourceTokenClient
+namespace CosmosResourceToken.Core.Client
 {
     [Preserve(AllMembers = true)]
-    internal class ClientTransportHandler : IAsyncDisposable 
+    internal class BrokerClientTransportHandler : IAsyncDisposable 
     {
         private readonly HttpClient _httpClient;
         private readonly Uri _resourceTokenBrokerUri;
 
-        internal ClientTransportHandler(string resourceTokenBrokerUrl)
+        internal BrokerClientTransportHandler(string resourceTokenBrokerUrl)
         {
             if (string.IsNullOrEmpty(resourceTokenBrokerUrl))
             {

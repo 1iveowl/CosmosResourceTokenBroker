@@ -8,21 +8,45 @@ using CosmosResourceToken.Core.Model;
 
 namespace CosmosResourceTokenClient
 {
+    /// <summary>
+    ///     <para>
+    ///         Cosmos token client.
+    ///     </para>
+    /// </summary>
     [Preserve(AllMembers = true)]
-    public class CosmosTokenClient : ICosmosTokenClient, IAsyncDisposable
+    public class CosmosTokenClient : BrokerClientExecutionHandler, ICosmosTokenClient, IAsyncDisposable
     {
-        private readonly ClientExecutionHandler _cosmosClientHandler;
+        private readonly BrokerClientExecutionHandler _cosmosClientHandler;
 
+        /// <summary>
+        ///     <para>
+        ///         Instance of Cosmos token client.
+        ///     </para>
+        /// </summary>
+        /// <param name="authService">Azure AD B2C authentication service.</param>
+        /// <param name="resourceTokenBrokerUrl">Url for the resource token broker</param>
+        /// <param name="resourceTokenCache">Caching of token</param>
         public CosmosTokenClient(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
-            ICacheSingleObjectByKey resourceTokenCache = null)
+            ICacheSingleObjectByKey resourceTokenCache = null) : base(authService, resourceTokenBrokerUrl, resourceTokenCache)
         {
-            _cosmosClientHandler = new ClientExecutionHandler(authService, resourceTokenBrokerUrl, resourceTokenCache);
+
         }
 
         #region Stream API
 
+        /// <summary>
+        ///     <para>
+        ///         Create Cosmos document.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="T">Type of document to create.</typeparam>
+        /// <param name="id">Unique id of document.</param>
+        /// <param name="item">The instance of document.</param>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task Create<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
@@ -37,6 +61,17 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
+        /// <summary>
+        ///     <para>
+        ///         Replace/Upsert document on Cosmos DB.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="T">Type of document to create.</typeparam>
+        /// <param name="id">Unique id of document.</param>
+        /// <param name="item">The instance of document.</param>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
@@ -51,6 +86,16 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
+        /// <summary>
+        ///     <para>
+        ///         Read document from Cosmos DB.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="T">Type of document to create.</typeparam>
+        /// <param name="id">Unique id of document.</param>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Document of type T</returns>
         public async Task<T> Read<T>(
             string id, 
             DefaultPartitionKind defaultPartition, 
@@ -67,7 +112,15 @@ namespace CosmosResourceTokenClient
 
                 }, PermissionModeKind.UserReadWrite, cancellationToken);
 
-
+        /// <summary>
+        ///     <para>
+        ///         Delete document from Cosmos DB.
+        ///     </para>
+        /// </summary>
+        /// <param name="id">Unique id of document.</param>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
         public async Task Delete(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
@@ -82,6 +135,15 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
+        /// <summary>
+        ///     <para>
+        ///         Get list of all document of type T in users partition from Cosmos DB.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="T">Type of document to create.</typeparam>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Enumerable list of type T.</returns>
         public async Task<IEnumerable<T>> List<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
@@ -95,7 +157,14 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
-
+        /// <summary>
+        ///     <para>
+        ///         Get list of all document in users partition from Cosmos DB as json string.
+        ///     </para>
+        /// </summary>
+        /// <param name="defaultPartition">Partition used (user or shared)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Enumerable list of json strings.</returns>
         public async Task<IEnumerable<string>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
             await _cosmosClientHandler.Execute(async resourcePermissionResponse =>
             {
@@ -109,12 +178,13 @@ namespace CosmosResourceTokenClient
 
             }, PermissionModeKind.UserReadWrite, cancellationToken);
 
-        public async ValueTask DisposeAsync()
+
+        public override async ValueTask DisposeAsync()
         {
             await _cosmosClientHandler.DisposeAsync();
+            await base.DisposeAsync();
         }
 
         #endregion
-
     }
 }

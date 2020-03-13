@@ -10,7 +10,7 @@ namespace CosmosResourceToken.Core.Client
     ///         Interface for the Cosmos DB entity including a document payload for representing the object of type <c>T</c>.
     ///     </para>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of document stored in Cosmos DB.</typeparam>
     public interface ICosmosItem<T> 
     {
         /// <summary>
