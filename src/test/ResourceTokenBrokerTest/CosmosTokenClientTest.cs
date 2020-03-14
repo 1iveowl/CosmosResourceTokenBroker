@@ -17,7 +17,7 @@ using Person = ResourceTokenBrokerTest.Model.Person;
 
 namespace ResourceTokenBrokerTest
 {
-    public class CosmosTokenClientTypedTest
+    public class CosmosTokenClientTest
     {
         // Use this switch to swap between using local emulator and Azure Function in the cloud.
         private const bool IsAzureFunctionLocalEmulator = false;
@@ -29,13 +29,13 @@ namespace ResourceTokenBrokerTest
         private readonly string _resourceTokenBrokerUrl;
         private readonly string _resourceTokenBrokerUrlLocalHost;
         
-        public CosmosTokenClientTypedTest()
+        public CosmosTokenClientTest()
         {
             const string defaultNameSpace = "ResourceTokenBrokerTest";
 
             _randomGuid = Guid.NewGuid().ToString();
 
-            var assembly = typeof(CosmosTokenClientTypedTest).GetTypeInfo().Assembly;
+            var assembly = typeof(CosmosTokenClientTest).GetTypeInfo().Assembly;
 
             var fileStream = assembly.GetManifestResourceStream($"{defaultNameSpace}.test.config.json");
 

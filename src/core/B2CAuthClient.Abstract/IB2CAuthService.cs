@@ -38,7 +38,6 @@ namespace B2CAuthClient.Abstract
         /// <param name="silentlyOnly">When set to true, only get user context from cache, do not try interactive log-in.</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>The user context of the logged-in user.</returns>
-
         Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default);
 
         /// <summary>
