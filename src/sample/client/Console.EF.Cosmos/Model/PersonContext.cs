@@ -1,10 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Console.EF.Cosmos.Model
 {
-    class PersonContext
+    public class PersonContext : DBContextBase
     {
+        public PersonContext(
+            string resourceTokenBrokerUrl,
+            string resourceToken,
+            string dbName) : base(resourceTokenBrokerUrl, resourceToken, dbName)
+        {
+
+        }
     }
 }

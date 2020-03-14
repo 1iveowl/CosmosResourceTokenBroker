@@ -14,7 +14,7 @@ namespace CosmosResourceTokenClient
     ///     </para>
     /// </summary>
     [Preserve(AllMembers = true)]
-    public class CosmosTokenClient : BrokerClientExecutionHandler, ICosmosTokenClient, IAsyncDisposable
+    public class CosmosTokenClient : BrokerClientHandler, ICosmosTokenClient, IAsyncDisposable
     {
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace CosmosResourceTokenClient
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
         public async Task Create<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
-            await ExecuteCosmosCommand(async resourcePermissionResponse =>
+            await ExecuteCommandWrapper(async resourcePermissionResponse =>
             {
                 if (defaultPartition == DefaultPartitionKind.Shared)
                 {
@@ -70,7 +70,7 @@ namespace CosmosResourceTokenClient
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
         public async Task Replace<T>(string id, T item, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
-            await ExecuteCosmosCommand(async resourcePermissionResponse =>
+            await ExecuteCommandWrapper(async resourcePermissionResponse =>
             {
                 if (defaultPartition == DefaultPartitionKind.Shared)
                 {
@@ -97,7 +97,7 @@ namespace CosmosResourceTokenClient
             string id, 
             DefaultPartitionKind defaultPartition, 
             CancellationToken cancellationToken = default) =>
-                await ExecuteCosmosCommand(async resourcePermissionResponse =>
+                await ExecuteCommandWrapper(async resourcePermissionResponse =>
                 {
                     var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                         ? PermissionModeKind.UserRead
@@ -119,7 +119,7 @@ namespace CosmosResourceTokenClient
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
         public async Task Delete(string id, DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
-            await ExecuteCosmosCommand(async resourcePermissionResponse =>
+            await ExecuteCommandWrapper(async resourcePermissionResponse =>
             {
                 if (defaultPartition == DefaultPartitionKind.Shared)
                 {
@@ -142,7 +142,7 @@ namespace CosmosResourceTokenClient
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Enumerable list of type T.</returns>
         public async Task<IEnumerable<T>> List<T>(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
-            await ExecuteCosmosCommand(async resourcePermissionResponse =>
+            await ExecuteCommandWrapper(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead
@@ -163,7 +163,7 @@ namespace CosmosResourceTokenClient
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Enumerable list of json strings.</returns>
         public async Task<IEnumerable<string>> GetPartitionDocuments(DefaultPartitionKind defaultPartition, CancellationToken cancellationToken = default) =>
-            await ExecuteCosmosCommand(async resourcePermissionResponse =>
+            await ExecuteCommandWrapper(async resourcePermissionResponse =>
             {
                 var permissionMode = defaultPartition == DefaultPartitionKind.UserDocument
                     ? PermissionModeKind.UserRead

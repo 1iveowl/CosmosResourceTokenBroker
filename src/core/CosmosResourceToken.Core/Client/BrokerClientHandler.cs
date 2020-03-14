@@ -9,31 +9,41 @@ using CosmosResourceToken.Core.Model;
 namespace CosmosResourceToken.Core.Client
 {
     [B2CAuthClient.Abstract.Preserve(AllMembers = true)]
-    public abstract class BrokerClientExecutionHandler : IAsyncDisposable
+    public abstract class BrokerClientHandler : IAsyncDisposable
     {
         private readonly IB2CAuthService _authService;
         private readonly BrokerClientTransportHandler _brokerTransportClient;
         private readonly ICacheSingleObjectByKey _resourceTokenCache;
 
-        public BrokerClientExecutionHandler(
+        public BrokerClientHandler(
             IB2CAuthService authService, 
             string resourceTokenBrokerUrl,
             ICacheSingleObjectByKey resourceTokenCache = null)
         {
-            _authService = authService ?? throw new NoNullAllowedException("B2C Authentication Service construction parameter cannot be null");
+            if (string.IsNullOrEmpty(resourceTokenBrokerUrl))
+            {
+                throw new CosmosClientException("Resource Token Broker url must be specified.");
+            }
+
+            if (authService is null)
+            {
+                throw new NoNullAllowedException("B2C Authentication Service cannot be null");
+            }
+
+            _authService = authService;
 
             _brokerTransportClient = new BrokerClientTransportHandler(resourceTokenBrokerUrl);
             _resourceTokenCache = resourceTokenCache;
         }
 
-        public async Task ExecuteCosmosCommand(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        protected async Task ExecuteCommandWrapper(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
             await cosmosFunc(resourcePermissionResponse);
         }
 
-        public async Task<T> ExecuteCosmosCommand<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        protected async Task<T> ExecuteCommandWrapper<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
