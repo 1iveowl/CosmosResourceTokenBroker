@@ -48,7 +48,7 @@ namespace Console.EF.Cosmos
 
         public static async Task Main(string[] args)
         {
-            System.Console.WriteLine($"Test: {_a}");
+            //System.Console.WriteLine($"Test: {_a}");
 
         }
 

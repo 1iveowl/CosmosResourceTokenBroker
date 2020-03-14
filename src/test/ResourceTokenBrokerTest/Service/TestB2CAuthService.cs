@@ -10,6 +10,7 @@ namespace ResourceTokenBrokerTest.Service
         private readonly IUserContext _userContext;
 
         public IUserContext CurrentUserContext => _userContext;
+        public bool IsInterativeSignInInProgress { get; }
 
         public TestB2CAuthService(IUserContext userContext)
         {

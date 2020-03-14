@@ -26,14 +26,14 @@ namespace CosmosResourceToken.Core.Client
             _resourceTokenCache = resourceTokenCache;
         }
 
-        public async Task Execute(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        public async Task ExecuteCosmosCommand(Func<IResourcePermissionResponse, Task> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
             await cosmosFunc(resourcePermissionResponse);
         }
 
-        public async Task<T> Execute<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
+        public async Task<T> ExecuteCosmosCommand<T>(Func<IResourcePermissionResponse, Task<T>> cosmosFunc, PermissionModeKind permissionMode, CancellationToken ct)
         {
             var resourcePermissionResponse = await GetResourcePermissionResponse(permissionMode, ct);
 
