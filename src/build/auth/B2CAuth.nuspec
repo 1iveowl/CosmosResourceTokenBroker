@@ -29,11 +29,7 @@ Fixed Android bug: Java type `microsoft.identity.client.AuthenticationActivity` 
   <files>
     <file src="..\1iveowl-logo.png" target="images\" />
     
-    <file src="..\..\main\B2CAuthClient\bin\Release\netstandard2.1\B2CAuthClient.dll" target="lib\netstandard2.1\" />
-    <file src="..\..\main\B2CAuthClient\bin\Release\netstandard2.1\B2CAuthClient.deps.json" target="lib\netstandard2.1\" />
-    <file src="..\..\main\B2CAuthClient\bin\Release\netstandard2.1\B2CAuthClient.pdb" target="lib\netstandard2.1\" />
-
-    <file src="..\..\core\B2CAuthClient.Abstract\bin\Release\netstandard2.1\B2CAuthClient.Abstract.*" target="lib\netstandard2.1\" />
+    <file src="..\..\main\B2CAuthClient\bin\Release\netstandard2.1\B2CAuthClient.*" target="lib\netstandard2.1\" />
 
   </files>
 </package>

@@ -16,13 +16,14 @@ namespace B2CAuthClient
     ///         Implements <c>IB2CAuthService</c>
     ///     </para>
     /// </summary>
+    [Preserve(AllMembers = true)]
     public class B2CAuthService : IB2CAuthService
     {
+        private readonly SemaphoreSlim _semaphore;
+
         private readonly IPublicClientApplication _pca;
         private readonly IEnumerable<string> _defaultScopes;
         private readonly string _signUpSignInFlowName;
-
-        private readonly SemaphoreSlim _semaphore;
 
         /// <summary>
         ///     <para>
@@ -39,7 +40,6 @@ namespace B2CAuthClient
         public IUserContext CurrentUserContext { get; private set; }
 
         public bool IsInterativeSignInInProgress { get; private set; }
-
 
         /// <summary>
         ///     <para>
@@ -66,6 +66,8 @@ namespace B2CAuthClient
             Func<bool> isAppleDeviceFunc,
             Func<object> getCurrentParentWindowsForAndroidFunc)
         {
+            _semaphore = new SemaphoreSlim(1, 1);
+
             _defaultScopes = defaultScopes;
             _signUpSignInFlowName = signUpSignInFlowName;
             
@@ -86,11 +88,23 @@ namespace B2CAuthClient
             }
 
             _pca = builder.Build();
-
-            _semaphore = new SemaphoreSlim(1, 1);
         }
 
-        public async Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        ///     <para>
+        ///         Sign-in user.
+        ///     </para>
+        ///     <para>
+        ///         Thread-safe synchronous execution. Only one sign-in session will run at a time. 
+        ///     </para>        /// </summary>
+        /// <param name="scopes">The list of scopes used when logging in.</param>
+        /// <param name="silentlyOnly">When set to true, only get user context from cache, do not try interactive log-in.</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>The user context of the logged-in user.</returns>
+        public async Task<IUserContext> SignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default) =>
+            await ExecuteSynchronously(async () => await DoSignIn(scopes, silentlyOnly, cancellationToken));
+            
+        private async Task<IUserContext> DoSignIn(IEnumerable<string> scopes = null, bool silentlyOnly = false, CancellationToken cancellationToken = default)
         {
             IUserContext userContext;
 
@@ -107,12 +121,12 @@ namespace B2CAuthClient
 
             return userContext;
         }
-        
+
         public async Task SignOut(CancellationToken cancellationToken = default)
         {
             if (IsInterativeSignInInProgress)
             {
-                throw new B2CAuthClientException("Interactive sign-in session already in progress.");
+                throw new B2CAuthClientException("Interactive sign-in session is currently in progress.");
             }
 
             var account = await GetCachedAccounts();
@@ -129,11 +143,6 @@ namespace B2CAuthClient
         
         private async Task<IUserContext> AcquireToken(bool silentlyOnly, IEnumerable<string> scopes, CancellationToken ct)
         {
-            if (IsInterativeSignInInProgress)
-            {
-                throw new B2CAuthClientException("Interactive sign-in session already in progress.");
-            }
-
             var account = await GetCachedAccounts();
 
             try
@@ -202,7 +211,22 @@ namespace B2CAuthClient
                 a.HomeAccountId?.ObjectId?.Split('.')?[0]?.EndsWith(_signUpSignInFlowName.ToLowerInvariant()) ?? false);
         }
 
-        private async Task Execute(Func<Task> task)
+        private async Task<T> ExecuteSynchronously<T>(Func<Task<T>> task)
+        {
+            await _semaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                return await task();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+        }
+
+        private async Task ExecuteSynchronously(Func<Task> task)
         {
             await _semaphore.WaitAsync().ConfigureAwait(false);
 
