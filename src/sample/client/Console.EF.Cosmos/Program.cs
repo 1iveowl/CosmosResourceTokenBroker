@@ -19,8 +19,6 @@ namespace Console.EF.Cosmos
                 await new CosmosTokenDbContext<PersonContext>(authService, authService.ResourceTokenBrokerUrl)
                     .GetDbContextAsync(PermissionModeKind.UserReadWrite);
 
-            var cosmosClient = personContext.Database.GetCosmosClient();
-
             //personContext.Add(new Person
             //{
             //    FirstName = "Test",
