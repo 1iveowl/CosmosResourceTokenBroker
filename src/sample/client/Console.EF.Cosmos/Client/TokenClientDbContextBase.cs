@@ -42,26 +42,4 @@ namespace Console.EF.Cosmos.Client
             base.OnConfiguring(optionsBuilder);
         }
     }
-
-    public class ExecStrategy : IExecutionStrategy
-    {
-        private readonly ExecutionStrategyDependencies _dependencies;
-
-        public ExecStrategy(ExecutionStrategyDependencies dependencies)
-        {
-            _dependencies = dependencies;
-        }
-
-        public bool RetriesOnFailure { get; } 
-        public TResult Execute<TState, TResult>(TState state, Func<DbContext, TState, TResult> operation, Func<DbContext, TState, ExecutionResult<TResult>> verifySucceeded)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResult> ExecuteAsync<TState, TResult>(TState state, Func<DbContext, TState, CancellationToken, Task<TResult>> operation, Func<DbContext, TState, CancellationToken, Task<ExecutionResult<TResult>>> verifySucceeded,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }
