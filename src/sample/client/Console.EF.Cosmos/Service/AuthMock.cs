@@ -21,7 +21,7 @@ namespace Console.EF.Cosmos.Service
 
         public AuthMock()
         {
-            const string defaultNameSpace = "ResourceTokenBrokerTest";
+            const string defaultNameSpace = "Console.EF.Cosmos";
 
             _randomGuid = Guid.NewGuid().ToString();
 

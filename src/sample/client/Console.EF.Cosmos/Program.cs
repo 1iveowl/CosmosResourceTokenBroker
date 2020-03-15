@@ -1,6 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Console.EF.Cosmos.Client;
+using Console.EF.Cosmos.Model;
 using Console.EF.Cosmos.Service;
+using CosmosResourceToken.Core.Model;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Console.EF.Cosmos
@@ -11,9 +15,38 @@ namespace Console.EF.Cosmos
         {
             var authService = new B2CAuthServiceMock();
 
-            var client = new CosmosTokenClientEF(authService, authService.ResourceTokenBrokerUrl);
+            await using var personContext = 
+                await new CosmosTokenDbContext<PersonContext>(authService, authService.ResourceTokenBrokerUrl)
+                    .GetDbContextAsync(PermissionModeKind.UserReadWrite);
 
+            var cosmosClient = personContext.Database.GetCosmosClient();
+
+            //personContext.Add(new Person
+            //{
+            //    FirstName = "Test",
+            //    LastName = "Tester",
+            //    PartitionKey = "pk",
+            //    Id = "Test2"
+            //});
+
+            //await personContext.SaveChangesAsync();
+
+            var person = await personContext.Persons.FindAsync(new object[] { "Test2" });
+
+            //var query = personContext.Persons
+            //        .Where(x => x.PartitionKey == "pk")
+            //        .Where(x =>  x.Id == "Test2")
+            //        .AsAsyncEnumerable()
+            //        .GetAsyncEnumerator();
             
+            //while (await query.MoveNextAsync())
+            //{
+            //    var t = query.Current;
+            //}
+            
+            //var person = await personContext.Persons.FindAsync("Test1");
+            
+            System.Console.ReadLine();
 
         }
 
