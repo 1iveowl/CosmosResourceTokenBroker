@@ -36,7 +36,7 @@ namespace Console.EF.Cosmos.Client
                     _cosmosUrl,
                     _resourceToken,
                     _dbName,
-                    builder => builder.QueryRequestOption(
+                    builder => builder.QueryRequestOptions(
                         new QueryRequestOptions {PartitionKey = new PartitionKey(_partitionKey) }));
 
             base.OnConfiguring(optionsBuilder);

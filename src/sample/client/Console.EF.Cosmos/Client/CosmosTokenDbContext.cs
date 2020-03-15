@@ -12,7 +12,7 @@ namespace Console.EF.Cosmos.Client
     [Preserve(AllMembers = true)]
     public class CosmosTokenDbContext<T> : BrokerClientHandler where T : DbContext, new()
     {
-        private DbContext _context;
+        private T _context;
         
         public CosmosTokenDbContext(
             IB2CAuthService authService, 
@@ -25,21 +25,16 @@ namespace Console.EF.Cosmos.Client
         public async Task<T> GetDbContextAsync(PermissionModeKind permissionMode, CancellationToken ct = default) =>
             await ExecuteCommandWrapper(resourcePermissionResponse =>
             {
-                var resourceToken = resourcePermissionResponse?.ResourcePermissions?
-                    .FirstOrDefault(r => r.PermissionMode == permissionMode)?.ResourceToken;
-                
-                var dbName = resourcePermissionResponse?.DatabaseId;
-
-                var partitionKey = resourcePermissionResponse?.ResourcePermissions?
-                    .FirstOrDefault(r => r.PermissionMode == permissionMode)?.PartitionKey;
-
+                var permission = resourcePermissionResponse?.ResourcePermissions?
+                    .FirstOrDefault(r => r.PermissionMode == permissionMode);
+                                               
                 _context = (T) Activator.CreateInstance(typeof(T), 
                     resourcePermissionResponse?.EndpointUrl, 
-                    resourceToken, 
-                    dbName,
-                    partitionKey);
+                    permission?.ResourceToken,
+                    resourcePermissionResponse?.DatabaseId,
+                    permission?.PartitionKey);
 
-                return Task.FromResult((T) _context);
+                return Task.FromResult(_context);
 
             }, permissionMode, ct);
 
