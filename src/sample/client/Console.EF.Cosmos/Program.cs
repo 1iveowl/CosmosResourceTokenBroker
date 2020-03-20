@@ -29,6 +29,14 @@ namespace Console.EF.Cosmos
 
             //await personContext.SaveChangesAsync();
 
+
+            var y = personContext.Persons.WithPartitionKey("user-08ca2146-5355-4d97-883f-1f9f170dcab1")
+                .Where(x => x.id == "Test2")
+                .ToList();
+
+            var t = personContext.Persons.AsNoTracking().ToList();
+            
+            
             var person = await personContext.Persons.FindAsync(new object[] { "Test2" });
 
             //var query = personContext.Persons

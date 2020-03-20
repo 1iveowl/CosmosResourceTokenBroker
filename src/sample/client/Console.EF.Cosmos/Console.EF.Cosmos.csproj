@@ -14,11 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="5.0.0-preview.2.20120.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\efcore\src\EFCore.Cosmos\EFCore.Cosmos.csproj" />
     <ProjectReference Include="..\..\..\core\B2CAuthClient.Abstract\B2CAuthClient.Abstract.csproj" />
     <ProjectReference Include="..\..\..\core\CosmosResourceToken.Core\CosmosResourceToken.Core.csproj" />
     <ProjectReference Include="..\..\..\main\B2CAuthClient\B2CAuthClient.csproj" />

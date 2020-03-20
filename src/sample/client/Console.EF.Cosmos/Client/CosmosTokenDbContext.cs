@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Console.EF.Cosmos.Client
 {
     [Preserve(AllMembers = true)]
-    public class CosmosTokenDbContext<T> : BrokerClientHandler where T : DbContext, new()
+    public class CosmosTokenDbContext<T> : BrokerClientHandler where T : IAsyncDisposable
     {
         private T _context;
         
@@ -29,7 +29,7 @@ namespace Console.EF.Cosmos.Client
                     .FirstOrDefault(r => r.PermissionMode == permissionMode);
                                                
                 _context = (T) Activator.CreateInstance(typeof(T), 
-                    resourcePermissionResponse?.EndpointUrl, 
+                    resourcePermissionResponse?.EndpointUrl,
                     permission?.ResourceToken,
                     resourcePermissionResponse?.DatabaseId,
                     permission?.PartitionKey);

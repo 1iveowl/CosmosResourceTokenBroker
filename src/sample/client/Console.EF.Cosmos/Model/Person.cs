@@ -12,7 +12,7 @@ namespace Console.EF.Cosmos.Model
         [Key]
         [JsonPropertyName("id")]
         [JsonProperty(PropertyName = "id")]
-        public string Id { get; set; }
+        public string id { get; set; }
 
 
         public string PartitionKey { get; set; }

@@ -56,12 +56,17 @@ namespace CosmosResourceToken.Core.Client
 
             var resourcePermissionResponse = await AcquireResourceToken(_authService.CurrentUserContext, ct);
 
-            var resourceToken = resourcePermissionResponse?.ResourcePermissions?
-                .FirstOrDefault(p => p?.PermissionMode == permissionMode)?.ResourceToken;
+            var permission = resourcePermissionResponse?.ResourcePermissions?
+                .FirstOrDefault(p => p?.PermissionMode == permissionMode);
 
-            if (string.IsNullOrEmpty(resourceToken))
+            if (string.IsNullOrEmpty(permission?.ResourceToken))
             {
                 throw new CosmosClientException($"No Resource Token acquired for permission: {permissionMode.ToString()}");
+            }
+
+            if (string.IsNullOrEmpty(permission?.PartitionKey))
+            {
+                throw new CosmosClientException($"No Partition Key acquired for permission: {permissionMode.ToString()}");
             }
 
             var endpointUrl = resourcePermissionResponse?.EndpointUrl;
